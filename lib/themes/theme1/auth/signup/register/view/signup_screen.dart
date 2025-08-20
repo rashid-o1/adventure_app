@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../../../core/utils/constant/app_labels.dart';
 import '../../../../../core/utils/style/app_colors.dart';
+import '../../../../../core/utils/style/app_fonts.dart';
 import '../controller/signup_controller.dart';
 
 class SignupScreen extends StatelessWidget {
@@ -10,6 +11,7 @@ class SignupScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final SignupController controller = Get.put(SignupController());
+    final RxBool isRemembered = false.obs; // Manage checkbox state directly
 
     return Scaffold(
       body: SafeArea(
@@ -21,28 +23,37 @@ class SignupScreen extends StatelessWidget {
               children: [
                 IconButton(
                   icon: const Icon(Icons.arrow_back),
-                  onPressed: () => Get.back(),
+                  onPressed: () {
+                    Get.back();
+                  }
                 ),
                 const SizedBox(height: 15),
                 Row(
                   children: [
                     Text(
                       AppLabels.helloThere,
-                      style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                      style: const TextStyle(
+                        fontFamily: AppFonts.interBold,
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                    const SizedBox(width: 5),
-                    const Icon(Icons.waving_hand, color: Colors.yellow),
                   ],
                 ),
                 const SizedBox(height: 10),
                 Text(
                   AppLabels.pleaseEnterCredentials,
-                  style: const TextStyle(fontSize: 16, color: Colors.black87),
+                  style: const TextStyle(
+                    fontFamily: AppFonts.interRegular,
+                    fontSize: 16,
+                    color: Colors.black87,
+                  ),
                 ),
                 const SizedBox(height: 30),
                 const Text(
                   "Username/Email",
                   style: TextStyle(
+                    fontFamily: AppFonts.interBold,
                     color: AppColors.black,
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
@@ -53,6 +64,10 @@ class SignupScreen extends StatelessWidget {
                   controller: controller.usernameController,
                   decoration: const InputDecoration(
                     hintText: 'e.g ... yourmail@yourdomain.com',
+                    hintStyle: TextStyle(
+                      fontFamily: AppFonts.interRegular,
+                      color: Colors.grey,
+                    ),
                     enabledBorder: UnderlineInputBorder(
                       borderSide: BorderSide(color: Colors.black),
                     ),
@@ -65,59 +80,101 @@ class SignupScreen extends StatelessWidget {
                 const Text(
                   "Password",
                   style: TextStyle(
+                    fontFamily: AppFonts.interBold,
                     color: AppColors.black,
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
                   ),
                 ),
                 const SizedBox(height: 8), // Space between text and textfield
-                TextField(
+                Obx(() => TextField(
                   controller: controller.passwordController,
-                  obscureText: true,
-                  decoration: const InputDecoration(
+                  obscureText: !controller.isPasswordVisible.value,
+                  decoration: InputDecoration(
                     hintText: 'Enter password',
-                    enabledBorder: UnderlineInputBorder(
+                    hintStyle: const TextStyle(
+                      fontFamily: AppFonts.interRegular,
+                      color: Colors.grey,
+                    ),
+                    enabledBorder: const UnderlineInputBorder(
                       borderSide: BorderSide(color: Colors.black),
                     ),
-                    focusedBorder: UnderlineInputBorder(
+                    focusedBorder: const UnderlineInputBorder(
                       borderSide: BorderSide(color: Colors.black, width: 2),
                     ),
-                    suffixIcon: Icon(Icons.visibility_off),
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        controller.isPasswordVisible.value
+                            ? Icons.visibility
+                            : Icons.visibility_off,
+                        color: Colors.black,
+                      ),
+                      onPressed: () {
+                        controller.isPasswordVisible.toggle();
+                      },
+                    ),
                   ),
-                ),
+                )),
                 const SizedBox(height: 20),
                 const Text(
                   "Repeat Password",
                   style: TextStyle(
+                    fontFamily: AppFonts.interBold,
                     color: AppColors.black,
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
                   ),
                 ),
                 const SizedBox(height: 8), // Space between text and textfield
-                TextField(
+                Obx(() => TextField(
                   controller: controller.repeatPasswordController,
-                  obscureText: true,
-                  decoration: const InputDecoration(
+                  obscureText: !controller.isRepeatPasswordVisible.value, // Assuming a second visibility state
+                  decoration: InputDecoration(
                     hintText: 'Enter password again',
-                    enabledBorder: UnderlineInputBorder(
+                    hintStyle: const TextStyle(
+                      fontFamily: AppFonts.interRegular,
+                      color: Colors.grey,
+                    ),
+                    enabledBorder: const UnderlineInputBorder(
                       borderSide: BorderSide(color: Colors.black),
                     ),
-                    focusedBorder: UnderlineInputBorder(
+                    focusedBorder: const UnderlineInputBorder(
                       borderSide: BorderSide(color: Colors.black, width: 2),
                     ),
-                    suffixIcon: Icon(Icons.visibility_off),
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        controller.isRepeatPasswordVisible.value
+                            ? Icons.visibility
+                            : Icons.visibility_off,
+                        color: Colors.black,
+                      ),
+                      onPressed: () {
+                        controller.isRepeatPasswordVisible.toggle();
+                      },
+                    ),
                   ),
-                ),
+                )),
                 const SizedBox(height: 10),
                 Row(
                   children: [
-                    Checkbox(value: false, activeColor: AppColors.black, onChanged: (value) {}),
-                    const Text(AppLabels.rememberMe, style: TextStyle(fontSize: 14)),
+                    Obx(() => Checkbox(
+                      value: isRemembered.value,
+                      activeColor: AppColors.black,
+                      onChanged: (value) {
+                        isRemembered.value = value ?? false;
+                      },
+                    )),
+                    const Text(
+                      AppLabels.rememberMe,
+                      style: TextStyle(
+                        fontFamily: AppFonts.interRegular,
+                        fontSize: 14,
+                      ),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 10),
-          
+
                 /// Divider with text
                 Row(
                   children: const [
@@ -130,7 +187,7 @@ class SignupScreen extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 15),
-          
+
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -157,21 +214,33 @@ class SignupScreen extends StatelessWidget {
                   ),
                   child: const Text(
                     "Sign In",
-                    style: TextStyle(color: Colors.white, fontSize: 16),
+                    style: TextStyle(
+                      fontFamily: AppFonts.interBold,
+                      color: Colors.white,
+                      fontSize: 16,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 10),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text(AppLabels.signInPrompt),
+                    Text(
+                      AppLabels.signInPrompt,
+                      style: const TextStyle(
+                        fontFamily: AppFonts.interRegular,
+                      ),
+                    ),
                     TextButton(
                       onPressed: () {
                         Get.offNamed('/login');
                       },
                       child: Text(
                         "Sign In",
-                        style: TextStyle(color: AppColors.black),
+                        style: TextStyle(
+                          fontFamily: AppFonts.interBold,
+                          color: AppColors.black,
+                        ),
                       ),
                     ),
                   ],
@@ -188,10 +257,6 @@ class SignupScreen extends StatelessWidget {
   Widget _socialButton(String assetPath) {
     return Container(
       height: 50,
-      decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey.shade300),
-        borderRadius: BorderRadius.circular(50),
-      ),
       child: Center(
         child: Image.asset(
           assetPath,
