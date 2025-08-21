@@ -6,13 +6,13 @@ class SplashController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    _navigateToLogin();
+    _navigateToSelectionScreen();
   }
 
-  void _navigateToLogin() async {
-    await Future.delayed(const Duration(seconds: 10));
-    isLoading.value = false; // Update the observable
-    Get.offNamed('/login'); // Replace '/login' with your login route
+  void _navigateToSelectionScreen() async {
+    await Future.delayed(const Duration(seconds: 5));
+    isLoading.value = false;
+    Get.offNamed('/selection'); // Navigate to the new selection screen route
   }
 
   @override
