@@ -37,7 +37,7 @@ dependencies:
   get: ^4.7.2
   intl : any
   geolocator: any
-
+  flutter_spinkit : any
 
 dev_dependencies:
   flutter_test:

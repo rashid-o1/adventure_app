@@ -1,14 +1,14 @@
 import 'package:adventure_app/themes/theme1/admin/create%20events/view/create_event_page.dart';
 import 'package:adventure_app/themes/theme1/admin/create%20team/view/create_team_page.dart';
-import 'package:adventure_app/themes/theme1/admin/super%20admin%20home/view/tasks_page.dart';
-import 'package:adventure_app/themes/theme1/admin/super%20admin%20home/view/teams_page.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../../../../core/utils/style/app_fonts.dart';
-import '../../create tasks/view/create_task_page.dart';
+import '../../../../../../core/utils/style/app_fonts.dart';
+import '../../../create tasks/view/create_task_page.dart';
+import '../../Tabs/task/view/tasks_page.dart';
+import '../../Tabs/team/view/teams_page.dart';
 import '../controller/super_admin_home_controller.dart';
-import 'equipment_page.dart';
-import 'events_page.dart';
+import '../../Tabs/equipment/view/equipment_page.dart';
+import '../../Tabs/event/view/events_page.dart';
 
 class SuperAdminHome extends StatelessWidget {
   const SuperAdminHome({super.key});
@@ -25,6 +25,7 @@ class SuperAdminHome extends StatelessWidget {
     ];
 
     return Scaffold(
+      backgroundColor: Colors.white,
       body: Stack(
         children: [
           SafeArea(
@@ -72,30 +73,12 @@ class SuperAdminHome extends StatelessWidget {
                     ],
                   ),
                 ),
-                // Search Bar
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.grey[200],
-                      borderRadius: BorderRadius.circular(25),
-                    ),
-                    child: TextField(
-                      controller: controller.searchController,
-                      decoration: const InputDecoration(
-                        prefixIcon: Icon(Icons.search, color: Colors.black),
-                        hintText: "Search here!",
-                        border: InputBorder.none,
-                        contentPadding: EdgeInsets.symmetric(vertical: 15),
-                      ),
-                    ),
-                  ),
-                ),
+
                 // Main Content Area (Dynamic based on selected tab and hasContent)
                 Expanded(
                   child: Obx(() {
                     if (controller.hasContent[controller.selectedTabIndex.value] == false) {
-                      return const _NoContentPlaceholder();
+                      return const EventsPage();
                     } else {
                       return pages[controller.selectedTabIndex.value];
                     }
@@ -176,7 +159,7 @@ class SuperAdminHome extends StatelessWidget {
                         "Team Invite", Icons.person_add, () => Get.to(() =>  CreateTeamPage())),
                     const SizedBox(height: 10),
                     _buildFabMenuItem(
-                        "New message", Icons.chat_bubble_outline, () => Get.to(() => EquipmentPage())),
+                        "New message", Icons.chat_bubble_outline, () => Get.to(() => ())),
                   ],
                 ],
               ),
@@ -290,38 +273,3 @@ class SuperAdminHome extends StatelessWidget {
 }
 
 
-// A widget to display the "no events" content
-class _NoContentPlaceholder extends StatelessWidget {
-  const _NoContentPlaceholder();
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        const Text(
-          "Add a New Event!",
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            fontFamily: AppFonts.interBold,
-            fontSize: 22,
-            fontWeight: FontWeight.bold,
-            color: Colors.black,
-          ),
-        ),
-        const SizedBox(height: 10),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 40.0),
-          child: Text(
-            "Invite the New Location Admins to their new Event and Management App",
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontFamily: AppFonts.interRegular,
-              fontSize: 16,
-              color: Colors.grey[600],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}

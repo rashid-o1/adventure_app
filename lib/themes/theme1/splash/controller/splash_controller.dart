@@ -10,7 +10,13 @@ class SplashController extends GetxController {
   }
 
   void _navigateToSelectionScreen() async {
-    await Future.delayed(const Duration(seconds: 5));
+    // Ensure the loading indicator shows for at least 2 seconds.
+    await Future.delayed(const Duration(seconds: 2));
+
+    // After the minimum duration, you can perform any other async tasks
+    // like fetching data, etc., if needed.
+    await Future.delayed(const Duration(seconds: 3));
+
     isLoading.value = false;
     Get.offNamed('/selection'); // Navigate to the new selection screen route
   }

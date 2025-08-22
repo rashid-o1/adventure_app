@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 import '../controller/splash_controller.dart';
 
 class SplashScreen extends StatelessWidget {
@@ -11,7 +13,6 @@ class SplashScreen extends StatelessWidget {
 
     return Scaffold(
       body: Stack(
-        alignment: Alignment.bottomCenter,
         children: [
           // Background image with dull effect
           Container(
@@ -35,15 +36,19 @@ class SplashScreen extends StatelessWidget {
               width: 200,
               height: 200,
               fit: BoxFit.contain,
-              colorBlendMode: BlendMode.dst,
             ),
           ),
-
-          Padding(
-            padding: const EdgeInsets.only(bottom: 30),
+          // Loading indicator positioned at the bottom
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 40.0, // Offset from the bottom
             child: Obx(() {
               return splashController.isLoading.value
-                  ? const CircularProgressIndicator(color: Colors.white)
+                  ? const SpinKitThreeBounce(
+                color: Colors.white,
+                size: 25.0,
+              )
                   : const SizedBox.shrink();
             }),
           ),

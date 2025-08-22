@@ -1,4 +1,4 @@
-import 'package:adventure_app/themes/theme1/admin/super%20admin%20home/view/super_admin_home.dart';
+import 'package:adventure_app/themes/theme1/admin/super%20admin%20home/admin_home/view/super_admin_home.dart';
 import 'package:adventure_app/themes/theme1/auth/login/view/login_screen.dart';
 import 'package:adventure_app/themes/theme1/auth/signup/register/view/signup_screen.dart';
 import 'package:adventure_app/themes/theme1/language%20selection/view/language_selection_screen.dart';
