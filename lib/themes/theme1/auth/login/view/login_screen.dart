@@ -1,7 +1,9 @@
-import 'package:flutter/material.dart'; // Updated import for Rx
+import 'package:adventure_app/themes/theme1/auth/forgot/view/forgot_password_screen.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../../../core/utils/constant/app_labels.dart';
 import '../../../../../core/utils/style/app_colors.dart';
+import '../../../../../core/utils/style/app_fonts.dart';
 import '../controller/login_controller.dart';
 
 class LoginScreen extends StatelessWidget {
@@ -10,6 +12,7 @@ class LoginScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final LoginController controller = Get.put(LoginController());
+    final RxBool isRemembered = false.obs; // manage checkbox state
 
     return Scaffold(
       body: SafeArea(
@@ -19,46 +22,51 @@ class LoginScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                IconButton(
-                  icon: const Icon(Icons.arrow_back, color: AppColors.black),
-                  onPressed: () => Get.back(),
-                  padding: EdgeInsets.zero,
-                ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 50),
 
                 /// Heading
                 Row(
                   children: [
                     Text(
                       AppLabels.helloThere,
-                      style: const TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
+                      style: const TextStyle(
+                        fontFamily: AppFonts.interBold,
+                        fontSize: 26,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                    const SizedBox(width: 5),
-                    const Icon(Icons.waving_hand, color: Colors.yellow, size: 28),
                   ],
                 ),
                 const SizedBox(height: 8),
                 Text(
                   AppLabels.pleaseEnterCredentials,
-                  style: const TextStyle(fontSize: 15, color: Colors.black87),
+                  style: const TextStyle(
+                    fontFamily: AppFonts.interRegular,
+                    fontSize: 15,
+                    color: Colors.black87,
+                  ),
                 ),
                 const SizedBox(height: 30),
 
                 /// Username Field
                 const Text(
-                  "Username/Email",
+                   AppLabels.usernameEmail,
                   style: TextStyle(
+                    fontFamily: AppFonts.interBold,
                     color: AppColors.black,
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
                   ),
                 ),
-                const SizedBox(height: 8), // Space between text and textfield
+                const SizedBox(height: 8),
                 TextField(
                   controller: controller.usernameController,
                   decoration: const InputDecoration(
-                    hintText: "e.g ... mail@yourdomain.com",
-                    hintStyle: TextStyle(color: Colors.grey),
+                    hintText: AppLabels.emailhint,
+                    hintStyle: TextStyle(
+                      fontFamily: AppFonts.interRegular,
+                      color: Colors.grey,
+                    ),
                     enabledBorder: UnderlineInputBorder(
                       borderSide: BorderSide(color: Colors.black),
                     ),
@@ -71,20 +79,24 @@ class LoginScreen extends StatelessWidget {
 
                 /// Password Field
                 const Text(
-                  "Password",
+                  AppLabels.password,
                   style: TextStyle(
+                    fontFamily: AppFonts.interBold,
                     color: AppColors.black,
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
                   ),
                 ),
-                const SizedBox(height: 8), // Space between text and textfield
+                const SizedBox(height: 8),
                 Obx(() => TextField(
                   controller: controller.passwordController,
                   obscureText: !controller.isPasswordVisible.value,
                   decoration: InputDecoration(
-                    hintText: "Enter your password",
-                    hintStyle: const TextStyle(color: Colors.grey),
+                    hintText: AppLabels.passwordhint,
+                    hintStyle: const TextStyle(
+                      fontFamily: AppFonts.interRegular,
+                      color: Colors.grey,
+                    ),
                     enabledBorder: const UnderlineInputBorder(
                       borderSide: BorderSide(color: Colors.black),
                     ),
@@ -110,8 +122,20 @@ class LoginScreen extends StatelessWidget {
                 /// Remember me
                 Row(
                   children: [
-                    Checkbox(value: false, activeColor: AppColors.black, onChanged: (value) {}),
-                    const Text("Remember me", style: TextStyle(fontSize: 14)),
+                    Obx(() => Checkbox(
+                      value: isRemembered.value,
+                      activeColor: AppColors.black,
+                      onChanged: (value) {
+                        isRemembered.value = value ?? false;
+                      },
+                    )),
+                    const Text(
+                      AppLabels.rememberMe,
+                      style: TextStyle(
+                        fontFamily: AppFonts.interRegular,
+                        fontSize: 14,
+                      ),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 5),
@@ -120,10 +144,14 @@ class LoginScreen extends StatelessWidget {
                 Align(
                   alignment: Alignment.center,
                   child: TextButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      Navigator.push(context, MaterialPageRoute(builder: (context)=>ForgotPasswordScreen()));
+
+                    },
                     child: const Text(
                       AppLabels.forgotPassword,
                       style: TextStyle(
+                        fontFamily: AppFonts.interBold,
                         color: AppColors.black,
                         fontSize: 14,
                         fontWeight: FontWeight.bold,
@@ -177,7 +205,11 @@ class LoginScreen extends StatelessWidget {
                   ),
                   child: const Text(
                     "Sign In",
-                    style: TextStyle(color: Colors.white, fontSize: 16),
+                    style: TextStyle(
+                      fontFamily: AppFonts.interBold,
+                      color: Colors.white,
+                      fontSize: 16,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 20),
@@ -186,14 +218,21 @@ class LoginScreen extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text(AppLabels.signUpPrompt, style: TextStyle(fontSize: 14)),
+                    const Text(
+                      AppLabels.signUpPrompt,
+                      style: TextStyle(
+                        fontFamily: AppFonts.interRegular,
+                        fontSize: 14,
+                      ),
+                    ),
                     GestureDetector(
                       onTap: () {
-                        Get.offNamed('/signup');
+                        Get.toNamed("/signup");
                       },
                       child: Text(
                         " Sign up",
                         style: TextStyle(
+                          fontFamily: AppFonts.interBold,
                           color: AppColors.black,
                           fontSize: 14,
                           fontWeight: FontWeight.bold,
@@ -214,10 +253,6 @@ class LoginScreen extends StatelessWidget {
   Widget _socialButton(String assetPath) {
     return Container(
       height: 50,
-      decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey.shade300),
-        borderRadius: BorderRadius.circular(50),
-      ),
       child: Center(
         child: Image.asset(
           assetPath,

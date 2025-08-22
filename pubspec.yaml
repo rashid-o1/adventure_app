@@ -35,11 +35,14 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
   get: ^4.7.2
+  intl : any
+  geolocator: any
 
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  change_app_package_name: ^1.5.0
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
@@ -76,6 +79,18 @@ flutter:
   # "family" key with the font family name, and a "fonts" key with a
   # list giving the asset and other descriptors for the font. For
   # example:
+  fonts:
+    - family: InterBold
+      fonts:
+        - asset: assets/fonts/inter/Inter_18pt-Bold.ttf
+
+    - family: InterMedium
+      fonts:
+        - asset: assets/fonts/inter/Inter_18pt-Medium.ttf
+
+    - family: InterRegular
+      fonts:
+        - asset: assets/fonts/inter/Inter_18pt-Regular.ttf
   # fonts:
   #   - family: Schyler
   #     fonts:

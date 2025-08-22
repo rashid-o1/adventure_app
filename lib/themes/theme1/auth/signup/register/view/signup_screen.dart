@@ -1,8 +1,9 @@
+import 'package:adventure_app/themes/theme1/auth/signup/verification/view/signup_verification.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../../../../core/utils/constant/app_labels.dart';
-import '../../../../../core/utils/style/app_colors.dart';
-import '../../../../../core/utils/style/app_fonts.dart';
+import '../../../../../../core/utils/constant/app_labels.dart';
+import '../../../../../../core/utils/style/app_colors.dart';
+import '../../../../../../core/utils/style/app_fonts.dart';
 import '../controller/signup_controller.dart';
 
 class SignupScreen extends StatelessWidget {
@@ -11,7 +12,7 @@ class SignupScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final SignupController controller = Get.put(SignupController());
-    final RxBool isRemembered = false.obs; // Manage checkbox state directly
+    final RxBool isRemembered = false.obs; // manage checkbox state
 
     return Scaffold(
       body: SafeArea(
@@ -24,7 +25,7 @@ class SignupScreen extends StatelessWidget {
                 IconButton(
                   icon: const Icon(Icons.arrow_back),
                   onPressed: () {
-                    Get.back();
+                    Navigator.pop(context);
                   }
                 ),
                 const SizedBox(height: 15),
@@ -51,7 +52,7 @@ class SignupScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 30),
                 const Text(
-                  "Username/Email",
+                  AppLabels.usernameEmail,
                   style: TextStyle(
                     fontFamily: AppFonts.interBold,
                     color: AppColors.black,
@@ -59,11 +60,11 @@ class SignupScreen extends StatelessWidget {
                     fontSize: 16,
                   ),
                 ),
-                const SizedBox(height: 8), // Space between text and textfield
+                const SizedBox(height: 8),
                 TextField(
                   controller: controller.usernameController,
                   decoration: const InputDecoration(
-                    hintText: 'e.g ... yourmail@yourdomain.com',
+                    hintText: AppLabels.emailhint,
                     hintStyle: TextStyle(
                       fontFamily: AppFonts.interRegular,
                       color: Colors.grey,
@@ -78,7 +79,7 @@ class SignupScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 20),
                 const Text(
-                  "Password",
+                  AppLabels.password,
                   style: TextStyle(
                     fontFamily: AppFonts.interBold,
                     color: AppColors.black,
@@ -86,12 +87,12 @@ class SignupScreen extends StatelessWidget {
                     fontSize: 16,
                   ),
                 ),
-                const SizedBox(height: 8), // Space between text and textfield
+                const SizedBox(height: 8),
                 Obx(() => TextField(
                   controller: controller.passwordController,
                   obscureText: !controller.isPasswordVisible.value,
                   decoration: InputDecoration(
-                    hintText: 'Enter password',
+                    hintText: AppLabels.passwordhint,
                     hintStyle: const TextStyle(
                       fontFamily: AppFonts.interRegular,
                       color: Colors.grey,
@@ -117,7 +118,7 @@ class SignupScreen extends StatelessWidget {
                 )),
                 const SizedBox(height: 20),
                 const Text(
-                  "Repeat Password",
+                  AppLabels.repeatPassword,
                   style: TextStyle(
                     fontFamily: AppFonts.interBold,
                     color: AppColors.black,
@@ -125,12 +126,12 @@ class SignupScreen extends StatelessWidget {
                     fontSize: 16,
                   ),
                 ),
-                const SizedBox(height: 8), // Space between text and textfield
+                const SizedBox(height: 8),
                 Obx(() => TextField(
                   controller: controller.repeatPasswordController,
-                  obscureText: !controller.isRepeatPasswordVisible.value, // Assuming a second visibility state
+                  obscureText: !controller.isRepeatPasswordVisible.value,
                   decoration: InputDecoration(
-                    hintText: 'Enter password again',
+                    hintText: AppLabels.repeatpasswordhint,
                     hintStyle: const TextStyle(
                       fontFamily: AppFonts.interRegular,
                       color: Colors.grey,
@@ -206,7 +207,10 @@ class SignupScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 20),
                 ElevatedButton(
-                  onPressed: () {},
+                  onPressed: () {
+                  //  Navigator.push(context, MaterialPageRoute(builder: (context)=>SignupVerificationScreen()));
+                   Get.to(SignupVerificationScreen(title: AppLabels.verificationTitle,));
+                  },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.black,
                     minimumSize: const Size(double.infinity, 55),
