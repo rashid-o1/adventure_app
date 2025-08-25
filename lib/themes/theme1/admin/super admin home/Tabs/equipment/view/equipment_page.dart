@@ -11,6 +11,7 @@ class EquipmentPage extends StatelessWidget {
     final EquipmentController equipmentController = Get.put(EquipmentController());
 
     return Scaffold(
+      backgroundColor: Colors.white,
 
       body: Obx(() {
         if (equipmentController.equipmentList.isNotEmpty) {
@@ -148,6 +149,7 @@ class EquipmentPage extends StatelessWidget {
           );
         }
       }),
+
     );
   }
 }
