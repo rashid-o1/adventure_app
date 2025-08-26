@@ -1,5 +1,6 @@
 import 'package:adventure_app/core/utils/style/app_colors.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import '../../../../../../../core/utils/style/app_fonts.dart';
 import '../controller/team_controller.dart';
@@ -16,28 +17,29 @@ class TeamViewPage extends StatelessWidget {
   }
 
   // Helper widget to build each member's list tile
-  Widget _buildMemberTile(Map<String, String> member, TeamController controller) {
+  Widget _buildMemberTile(Map<String, String> member, TeamController controller, double width) {
     return ListTile(
       onLongPress: () {
         controller.showMemberOptionsDialog(member);
       },
       leading: CircleAvatar(
         backgroundImage: NetworkImage(member["avatar"]!),
+        radius: width * 0.05,
       ),
       title: Text(
         member["name"]!,
-        style: const TextStyle(
+        style: TextStyle(
           fontFamily: AppFonts.interRegular,
-          fontSize: 14,
+          fontSize: width * 0.035,
         ),
       ),
       trailing: Container(
-        padding: const EdgeInsets.symmetric(
-          vertical: 4,
-          horizontal: 10,
+        padding: EdgeInsets.symmetric(
+          vertical: width * 0.01,
+          horizontal: width * 0.025,
         ),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(width * 0.05),
           color: member["role"] == "Admin" ? Colors.black : Colors.white,
           border: Border.all(color: Colors.black),
         ),
@@ -46,7 +48,7 @@ class TeamViewPage extends StatelessWidget {
           style: TextStyle(
             fontFamily: AppFonts.interRegular,
             color: member["role"] == "Admin" ? Colors.white : Colors.black,
-            fontSize: 12,
+            fontSize: width * 0.03,
           ),
         ),
       ),
@@ -55,7 +57,16 @@ class TeamViewPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Set status bar style
+    SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+      statusBarColor: Colors.black,
+      statusBarIconBrightness: Brightness.light,
+      statusBarBrightness: Brightness.dark,
+    ));
+
     final String teamName = teamData['name'] ?? "Team";
+    final double width = MediaQuery.of(context).size.width;
+    final double height = MediaQuery.of(context).size.height;
 
     if (!controller.isMuted.containsKey(teamName)) {
       controller.isMuted[teamName] = false;
@@ -66,129 +77,155 @@ class TeamViewPage extends StatelessWidget {
         backgroundColor: Colors.black,
         title: Text(
           "$teamName Info",
-          style: const TextStyle(
+          style: TextStyle(
             fontFamily: AppFonts.interBold,
+            fontSize: width * 0.045,
             color: Colors.white,
           ),
         ),
         centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          icon: Icon(Icons.arrow_back, color: Colors.white, size: width * 0.06),
           onPressed: () => Get.back(),
         ),
       ),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: double.infinity,
-            color: Colors.black,
-            padding: const EdgeInsets.only(left: 16, top: 16, bottom: 16, right: 5),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  teamName,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 20,
-                    fontFamily: AppFonts.interRegular,
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(right: 12.0),
-                  child: Container(
-                    padding: const EdgeInsets.all(6),
-                    decoration: const BoxDecoration(
-                      color: Colors.grey,
-                      shape: BoxShape.circle,
+      body: SafeArea(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: double.infinity,
+              color: Colors.black,
+              padding: EdgeInsets.only(left: width * 0.04, top: height * 0.02, bottom: height * 0.02, right: width * 0.0125),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    teamName,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: width * 0.05,
+                      fontFamily: AppFonts.interRegular,
                     ),
-                    child: GestureDetector(
-                      onTap: () {
-                        Get.back();
-                      },
-                      child: const Icon(
-                        Icons.message,
-                        color: Colors.white,
-                        size: 20,
+                  ),
+                  Padding(
+                    padding: EdgeInsets.only(right: width * 0.03),
+                    child: Container(
+                      padding: EdgeInsets.all(width * 0.015),
+                      decoration: const BoxDecoration(
+                        color: Colors.grey,
+                        shape: BoxShape.circle,
+                      ),
+                      child: GestureDetector(
+                        onTap: () {
+                          Get.back();
+                        },
+                        child: Icon(
+                          Icons.message,
+                          color: Colors.white,
+                          size: width * 0.05,
+                        ),
                       ),
                     ),
                   ),
+                ],
+              ),
+            ),
+            ListTile(
+              trailing: Icon(Icons.email_outlined, size: width * 0.06),
+              title: Text(
+                "Post message via email",
+                style: TextStyle(
+                  fontFamily: AppFonts.interRegular,
+                  fontSize: width * 0.04,
                 ),
-              ],
+              ),
+              onTap: () {
+                controller.showEmailOptionsBottomSheet();
+              },
             ),
-          ),
-          ListTile(
-            trailing: const Icon(Icons.email_outlined),
-            title: const Text("Post message via email",
-                style: TextStyle(fontFamily: AppFonts.interRegular)),
-            onTap: () {},
-          ),
-          const Divider(),
-          ListTile(
-            dense: true,
-            trailing: const Icon(Icons.attach_file),
-            title: const Text("Pinned files & media",
-                style: TextStyle(fontFamily: AppFonts.interRegular, fontSize: 16)),
-            onTap: () {
-              Get.to(() => PinnedFilesPage(teamName: '$teamName'));
-            },
-          ),
-          const Divider(),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text("Mute conversation",
-                    style: TextStyle(fontFamily: AppFonts.interRegular, fontSize: 16)),
-                Obx(() => Switch(
-                  value: controller.isMuted[teamName] ?? false,
-                  onChanged: (val) {
-                    controller.isMuted[teamName] = val;
+            const Divider(),
+            ListTile(
+              dense: true,
+              trailing: Icon(Icons.attach_file, size: width * 0.06),
+              title: Text(
+                "Pinned files & media",
+                style: TextStyle(
+                  fontFamily: AppFonts.interRegular,
+                  fontSize: width * 0.04,
+                ),
+              ),
+              onTap: () {
+                Get.to(() => PinnedFilesPage(teamName: '$teamName'));
+              },
+            ),
+            const Divider(),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: width * 0.04),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    "Mute conversation",
+                    style: TextStyle(
+                      fontFamily: AppFonts.interRegular,
+                      fontSize: width * 0.04,
+                    ),
+                  ),
+                  Obx(() => Switch(
+                    value: controller.isMuted[teamName] ?? false,
+                    onChanged: (val) {
+                      controller.isMuted[teamName] = val;
+                    },
+                    activeColor: Colors.white,
+                    activeTrackColor: Colors.black,
+                    inactiveTrackColor: Colors.white,
+                    inactiveThumbColor: Colors.black,
+                  )),
+                ],
+              ),
+            ),
+            const Divider(),
+            Padding(
+              padding: EdgeInsets.all(width * 0.03),
+              child: Text(
+                "Members",
+                style: TextStyle(
+                  fontFamily: AppFonts.interBold,
+                  fontSize: width * 0.04,
+                ),
+              ),
+            ),
+            ListTile(
+              leading: CircleAvatar(
+                backgroundColor: AppColors.black,
+                radius: width * 0.05,
+                child: Icon(Icons.add, color: Colors.white, size: width * 0.05),
+              ),
+              title: Text(
+                "Add Members",
+                style: TextStyle(
+                  fontFamily: AppFonts.interRegular,
+                  fontSize: width * 0.04,
+                ),
+              ),
+              onTap: () {
+                Get.to(() => AddMembersPage(teamName: '$teamName'));
+              },
+            ),
+            Expanded(
+              child: Obx(
+                    () => ListView.builder(
+                  itemCount: controller.members.length,
+                  itemBuilder: (context, index) {
+                    final member = controller.members[index];
+                    return _buildMemberTile(member, controller, width);
                   },
-                  activeColor: Colors.white,
-                  activeTrackColor: Colors.black,
-                  inactiveTrackColor: Colors.white,
-                  inactiveThumbColor: Colors.black,
-                )),
-              ],
-            ),
-          ),
-          const Divider(),
-          const Padding(
-            padding: EdgeInsets.all(12.0),
-            child: Text(
-              "Members",
-              style: TextStyle(
-                fontFamily: AppFonts.interBold,
-                fontSize: 16,
+                ),
               ),
             ),
-          ),
-          ListTile(
-            leading: const CircleAvatar(
-              backgroundColor: AppColors.black,
-              child: Icon(Icons.add, color: Colors.white),
-            ),
-            title: const Text("Add Members",
-                style: TextStyle(fontFamily: AppFonts.interRegular)),
-            onTap: () {
-              Get.to(() => AddMembersPage(teamName: '$teamName'));
-            },
-          ),
-          Expanded(
-            child: Obx(
-                  () => ListView.builder(
-                itemCount: controller.members.length,
-                itemBuilder: (context, index) {
-                  final member = controller.members[index];
-                  return _buildMemberTile(member, controller);
-                },
-              ),
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
       backgroundColor: Colors.white,
     );

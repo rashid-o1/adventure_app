@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
 import '../controller/splash_controller.dart';
 
 class SplashScreen extends StatelessWidget {
@@ -11,13 +10,15 @@ class SplashScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final SplashController splashController = Get.put(SplashController());
 
+    final mq = MediaQuery.of(context).size;
+
     return Scaffold(
       body: Stack(
         children: [
-          // Background image with dull effect
+          // 🔹 Background image full screen (including status bar)
           Container(
-            width: MediaQuery.of(context).size.width,
-            height: MediaQuery.of(context).size.height,
+            width: mq.width,
+            height: mq.height,
             decoration: const BoxDecoration(
               image: DecorationImage(
                 image: AssetImage('assets/images/appImages/splash_back.png'),
@@ -29,28 +30,37 @@ class SplashScreen extends StatelessWidget {
               ),
             ),
           ),
-          // Centered splash image with clear visibility
-          Center(
-            child: Image.asset(
-              'assets/images/appImages/splash.png',
-              width: 200,
-              height: 200,
-              fit: BoxFit.contain,
+
+          // 🔹 Foreground content inside SafeArea
+          SafeArea(
+            child: Stack(
+              children: [
+                // Center splash logo
+                Center(
+                  child: Image.asset(
+                    'assets/images/appImages/splash.png',
+                    width: mq.width * 0.45,
+                    height: mq.width * 0.45,
+                    fit: BoxFit.contain,
+                  ),
+                ),
+
+                // Loading indicator at bottom
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  bottom: mq.height * 0.05,
+                  child: Obx(() {
+                    return splashController.isLoading.value
+                        ? const SpinKitThreeBounce(
+                      color: Colors.white,
+                      size: 25.0,
+                    )
+                        : const SizedBox.shrink();
+                  }),
+                ),
+              ],
             ),
-          ),
-          // Loading indicator positioned at the bottom
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 40.0, // Offset from the bottom
-            child: Obx(() {
-              return splashController.isLoading.value
-                  ? const SpinKitThreeBounce(
-                color: Colors.white,
-                size: 25.0,
-              )
-                  : const SizedBox.shrink();
-            }),
           ),
         ],
       ),

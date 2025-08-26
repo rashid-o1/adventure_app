@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:adventure_app/core/utils/style/app_fonts.dart';
+import 'package:image_picker/image_picker.dart';
+
+import '../view/attach_image_edit_page.dart';
+import '../view/contact_message_page.dart';
 
 class TeamController extends GetxController {
   final isSearching = false.obs;
@@ -8,6 +12,20 @@ class TeamController extends GetxController {
   final RxMap<String, bool> isMuted = <String, bool>{}.obs;
   final RxList<Map<String, String>> members = <Map<String, String>>[].obs;
   final Rx<Map<String, dynamic>?> selectedMessage = Rx<Map<String, dynamic>?>(null);
+  // Map of known senders to their emails for the example
+  final Map<String, String> senderEmails = {
+    'Zohaib': 'zohaib.01@email.com',
+    'Paul': 'paul.02@email.com',
+    'Hafsa': 'hafsa.03@email.com',
+    'Ali': 'ali.04@email.com',
+    'Faraz': 'faraz.05@email.com',
+    'Iqra': 'iqra.06@email.com',
+    'Jawad': 'jawad.07@email.com',
+    'Raheem': 'raheem.08@email.com',
+    'Areeba': 'areeba.09@email.com',
+    'Hassan': 'hassan.10@email.com',
+    'Huma Noor': 'huma.11@email.com',
+  };
 
 
   final RxList<Map<String, String>> teams = <Map<String, String>>[
@@ -278,6 +296,108 @@ class TeamController extends GetxController {
     members.value = teamMembers;
   }
 
+  // New method to show the email options bottom sheet
+  void showEmailOptionsBottomSheet() {
+    Get.bottomSheet(
+      SafeArea(
+        child: Container(
+          color: Colors.white,
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _buildOptionTile("Send a New Email", () {
+                Get.back();
+              }, icon: Icons.email_outlined),
+              _buildOptionTile("Send to Members List", () {
+                Get.back();
+              }, icon: Icons.group_outlined),
+              _buildOptionTile("View Past Emails", () {
+                Get.back();
+              }, icon: Icons.history),
+            ],
+          ),
+        ),
+      ),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+      ),
+    );
+  }
+
+  // New method to show the attachments bottom sheet
+  void showAttachBottomSheet(BuildContext context) {
+    Get.bottomSheet(
+      SafeArea(
+        child: Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(20),
+              topRight: Radius.circular(20),
+            ),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                child: Container(
+                  width: 40,
+                  height: 5,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade400,
+                    borderRadius: BorderRadius.circular(2.5),
+                  ),
+                ),
+              ),
+              _buildOptionTile("Attach files", () {
+                Get.back();
+              }, icon: Icons.attach_file),
+              _buildOptionTile("Attached photo or videos", () {
+                Get.back();
+                _pickAndEditImage();
+              }, icon: Icons.image_outlined),
+              _buildOptionTile("Take a photo", () {
+                Get.back();
+              }, icon: Icons.photo_camera_outlined),
+              _buildOptionTile("Share GIF", () {
+                Get.back();
+              }, icon: Icons.gif_box_outlined),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // New function to handle picking and editing the image
+  Future<void> _pickAndEditImage() async {
+    // This is a common error with the image_picker package on Android.
+    // It usually means the AndroidManifest.xml file is missing the required permissions.
+    // Please check your `android/app/src/main/AndroidManifest.xml` file and
+    // ensure you have the following permissions:
+    // <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
+    // <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    // <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
+    // You may also need to update the `pigeon` dependencies if you're using a newer Flutter version.
+    try {
+      final ImagePicker picker = ImagePicker();
+      final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+
+      if (image != null) {
+        Get.to(() => AttachImageEditorPage(imageUrl: image.path));
+      }
+    } catch (e) {
+      Get.snackbar(
+        "Error",
+        "Could not open the gallery. Please check your app's permissions.",
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      print("Error picking image: $e");
+    }
+  }
+
   //  dialog and logic for member options
   void showMemberOptionsDialog(Map<String, String> member) {
     Get.dialog(
@@ -291,6 +411,13 @@ class TeamController extends GetxController {
           children: [
             _buildOptionTile("Message ${member['name']}", () {
               Get.back();
+              // Get the email and pass it along with the rest of the member data
+              final memberEmail = senderEmails[member['name']];
+              final Map<String, String> contactDataWithEmail = Map.from(member);
+              if (memberEmail != null) {
+                contactDataWithEmail['email'] = memberEmail;
+              }
+              Get.to(() => ContactMessagePage(contactData: contactDataWithEmail));
             }),
             _buildOptionTile("View ${member['name']}", () {
               Get.back();
@@ -343,39 +470,41 @@ class TeamController extends GetxController {
   void showChatOptions(BuildContext context, Map<String, dynamic> message) {
     // You can customize the bottom sheet UI here.
     Get.bottomSheet(
-      Container(
-        color: Colors.white,
-        padding: const EdgeInsets.symmetric(vertical: 8),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _buildOptionTile("Quote message", () {
-              // TODO: Implement quote message logic
-              Get.back();
-            }, icon: Icons.format_quote),
-            _buildOptionTile("Forward message", () {
-              // TODO: Implement forward message logic
-              Get.back();
-            }, icon: Icons.shortcut),
-            _buildOptionTile("Edit message", () {
-              // TODO: Implement edit message logic
-              Get.back();
-            }, icon: Icons.edit),
-            _buildOptionTile("Copy", () {
-              // Call the copy logic in the controller
-              _copyMessage(message['message'] ?? '');
-              Get.back();
-            }, icon: Icons.copy),
-            _buildOptionTile("Pin", () {
-              // TODO: Implement pin message logic
-              Get.back();
-            }, icon: Icons.push_pin_outlined),
-            _buildOptionTile("Delete message", () {
-              // Call the delete logic in the controller
-              _deleteMessage(message);
-              Get.back();
-            }, icon: Icons.delete_outline),
-          ],
+      SafeArea(
+        child: Container(
+          color: Colors.white,
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _buildOptionTile("Quote message", () {
+
+                Get.back();
+              }, icon: Icons.format_quote),
+              _buildOptionTile("Forward message", () {
+
+                Get.back();
+              }, icon: Icons.shortcut),
+              _buildOptionTile("Edit message", () {
+
+                Get.back();
+              }, icon: Icons.edit),
+              _buildOptionTile("Copy", () {
+                // Call the copy logic in the controller
+                _copyMessage(message['message'] ?? '');
+                Get.back();
+              }, icon: Icons.copy),
+              _buildOptionTile("Pin", () {
+
+                Get.back();
+              }, icon: Icons.push_pin_outlined),
+              _buildOptionTile("Delete message", () {
+                // Call the delete logic in the controller
+                _deleteMessage(message);
+                Get.back();
+              }, icon: Icons.delete_outline),
+            ],
+          ),
         ),
       ),
       shape: RoundedRectangleBorder(
@@ -406,5 +535,4 @@ class TeamController extends GetxController {
 
     Get.snackbar("Deleted!", "Message has been deleted.");
   }
-
 }

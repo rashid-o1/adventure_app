@@ -9,10 +9,10 @@ class EquipmentPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final EquipmentController equipmentController = Get.put(EquipmentController());
+    final Size size = MediaQuery.of(context).size; // 📱 screen size
 
     return Scaffold(
       backgroundColor: Colors.white,
-
       body: Obx(() {
         if (equipmentController.equipmentList.isNotEmpty) {
           return Column(
@@ -20,30 +20,30 @@ class EquipmentPage extends StatelessWidget {
             children: [
               // Search Bar
               Padding(
-                padding: const EdgeInsets.all(16.0),
+                padding: EdgeInsets.all(size.width * 0.04), // responsive padding
                 child: Container(
                   decoration: BoxDecoration(
                     color: Colors.grey.shade100,
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(size.width * 0.05),
                   ),
                   child: TextField(
                     decoration: InputDecoration(
                       hintText: "Search here!",
-                      hintStyle: const TextStyle(color: Colors.grey),
+                      hintStyle: TextStyle(color: Colors.grey, fontSize: size.width * 0.04),
                       suffixIcon: const Icon(Icons.search, color: Colors.grey),
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(20),
+                        borderRadius: BorderRadius.circular(size.width * 0.05),
                         borderSide: const BorderSide(color: Colors.grey, width: 1.5),
                       ),
                       enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(20),
+                        borderRadius: BorderRadius.circular(size.width * 0.05),
                         borderSide: const BorderSide(color: Colors.grey, width: 1.5),
                       ),
                       focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(20),
-                        borderSide: const BorderSide(color: Colors.black, width: 1.8), // 👈 black border on input
+                        borderRadius: BorderRadius.circular(size.width * 0.05),
+                        borderSide: const BorderSide(color: Colors.black, width: 1.8),
                       ),
-                      contentPadding: const EdgeInsets.all(16.0),
+                      contentPadding: EdgeInsets.all(size.width * 0.04),
                     ),
                   ),
                 ),
@@ -51,14 +51,17 @@ class EquipmentPage extends StatelessWidget {
 
               Expanded(
                 child: ListView.builder(
-                  padding: const EdgeInsets.symmetric(vertical: 16.0),
+                  padding: EdgeInsets.symmetric(vertical: size.height * 0.02),
                   itemCount: equipmentController.equipmentList.length,
                   itemBuilder: (context, index) {
                     final item = equipmentController.equipmentList[index];
                     return Column(
                       children: [
                         Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 12),
+                          padding: EdgeInsets.symmetric(
+                            vertical: size.height * 0.01,
+                            horizontal: size.width * 0.03,
+                          ),
                           child: Row(
                             children: [
                               Expanded(
@@ -67,18 +70,18 @@ class EquipmentPage extends StatelessWidget {
                                   children: [
                                     Text(
                                       item['teamName'] ?? '',
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                         fontFamily: AppFonts.interBold,
-                                        fontSize: 16,
+                                        fontSize: size.width * 0.045,
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),
-                                    const SizedBox(height: 5),
+                                    SizedBox(height: size.height * 0.005),
                                     Text(
                                       item['description'] ?? '',
                                       style: TextStyle(
                                         fontFamily: AppFonts.interRegular,
-                                        fontSize: 14,
+                                        fontSize: size.width * 0.04,
                                         color: Colors.grey[600],
                                       ),
                                     ),
@@ -109,7 +112,7 @@ class EquipmentPage extends StatelessWidget {
                             ],
                           ),
                         ),
-                        const Divider(height: 1), // 👈 divider after each item (including last)
+                        const Divider(height: 1),
                       ],
                     );
                   },
@@ -119,37 +122,38 @@ class EquipmentPage extends StatelessWidget {
           );
         } else {
           // Placeholder UI for no equipment
-          return Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Text(
-                "No Equipment of teams yet",
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontFamily: AppFonts.interBold,
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black,
-                ),
-              ),
-              const SizedBox(height: 10),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 40.0),
-                child: Text(
-                  "Team equipments will be displayed here",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontFamily: AppFonts.interRegular,
-                    fontSize: 16,
-                    color: Colors.grey[600],
+          return Center(
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: size.width * 0.1),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    "No Equipment of teams yet",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontFamily: AppFonts.interBold,
+                      fontSize: size.width * 0.06,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                    ),
                   ),
-                ),
+                  SizedBox(height: size.height * 0.01),
+                  Text(
+                    "Team equipments will be displayed here",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontFamily: AppFonts.interRegular,
+                      fontSize: size.width * 0.045,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                ],
               ),
-            ],
+            ),
           );
         }
       }),
-
     );
   }
 }

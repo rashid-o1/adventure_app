@@ -9,17 +9,16 @@ class SelectionScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Inject the controller
     final controller = Get.put(SelectionController());
+    final mq = MediaQuery.of(context).size;
 
     return Scaffold(
       body: Stack(
-        alignment: Alignment.bottomCenter,
         children: [
-          // Background image with dull effect
+          // 🔹 Background full screen (SafeArea ke bahar)
           Container(
-            width: MediaQuery.of(context).size.width,
-            height: MediaQuery.of(context).size.height,
+            width: mq.width,
+            height: mq.height,
             decoration: const BoxDecoration(
               image: DecorationImage(
                 image: AssetImage('assets/images/appImages/splash_back.png'),
@@ -31,61 +30,65 @@ class SelectionScreen extends StatelessWidget {
               ),
             ),
           ),
-          // Content with "Hello there" text and buttons
-          Container(
-            width: MediaQuery.of(context).size.width,
-            height: MediaQuery.of(context).size.height,
-            padding: const EdgeInsets.symmetric(horizontal: 25.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 100),
-                Text(
-                  '${AppLabels.helloThere}  👋',
-                  style: TextStyle(
-                    fontFamily: AppFonts.interBold,
-                    color: Colors.white,
-                    fontSize: 30,
+
+          // 🔹 Foreground content SafeArea ke andar
+          SafeArea(
+            child: Container(
+              width: mq.width,
+              height: mq.height,
+              padding: EdgeInsets.symmetric(horizontal: mq.width * 0.06),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(height: mq.height * 0.12),
+                  Text(
+                    '${AppLabels.helloThere} 👋',
+                    style: TextStyle(
+                      fontFamily: AppFonts.interBold,
+                      color: Colors.white,
+                      fontSize: mq.width * 0.075,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 10),
-                Text(
-                  'Please Select who you are using 4x4 Adventures.',
-                  style: TextStyle(
-                    fontFamily: AppFonts.interRegular,
-                    color: Colors.white70,
-                    fontSize: 16,
+                  SizedBox(height: mq.height * 0.01),
+                  Text(
+                    'Please Select who you are using 4x4 Adventures.',
+                    style: TextStyle(
+                      fontFamily: AppFonts.interRegular,
+                      color: Colors.white70,
+                      fontSize: mq.width * 0.04,
+                    ),
                   ),
-                ),
-                const Spacer(),
-                // Admin Button
-                _buildSelectionButton(
-                  context,
-                  controller,
-                  0, // Index for the button
-                  AppLabels.adminselectionbtntext,
-                  '/superAdminHome',
-                ),
-                const SizedBox(height: 15),
-                // Team Lead Button
-                _buildSelectionButton(
-                  context,
-                  controller,
-                  1, // Index for the button
-                  AppLabels.teamleadbtntext,
-                  '/login',
-                ),
-                const SizedBox(height: 15),
-                // Team Member Button
-                _buildSelectionButton(
-                  context,
-                  controller,
-                  2, // Index for the button
-                  AppLabels.teammemberbtntext,
-                  '/login',
-                ),
-                const SizedBox(height: 70),
-              ],
+                  const Spacer(),
+
+                  // 🔹 Buttons
+                  _buildSelectionButton(
+                    context,
+                    controller,
+                    0,
+                    AppLabels.adminselectionbtntext,
+                    '/superAdminHome',
+                  ),
+                  SizedBox(height: mq.height * 0.015),
+
+                  _buildSelectionButton(
+                    context,
+                    controller,
+                    1,
+                    AppLabels.teamleadbtntext,
+                    '/login',
+                  ),
+                  SizedBox(height: mq.height * 0.015),
+
+                  _buildSelectionButton(
+                    context,
+                    controller,
+                    2,
+                    AppLabels.teammemberbtntext,
+                    '/login',
+                  ),
+                  SizedBox(height: mq.height * 0.08),
+                ],
+              ),
             ),
           ),
         ],
@@ -98,38 +101,43 @@ class SelectionScreen extends StatelessWidget {
       SelectionController controller,
       int index,
       String text,
-      String routeName) {
+      String routeName,
+      ) {
+    final mq = MediaQuery.of(context).size;
+
     return Obx(() {
       final isLoading = controller.loadingStates[index].value;
-      return SizedBox(
-        width: double.infinity,
-        child: ElevatedButton(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: isLoading ? Colors.transparent : Colors.white,
-            padding: const EdgeInsets.symmetric(vertical: 18),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(50),
-              side: isLoading
-                  ? const BorderSide(color: Colors.white, width: 2)
-                  : BorderSide.none,
+      return Center(
+        child: SizedBox(
+          width: mq.width * 0.65,
+          child: ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: isLoading ? Colors.transparent : Colors.white,
+              padding: EdgeInsets.symmetric(vertical: mq.height * 0.012),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(mq.width * 0.09),
+                side: isLoading
+                    ? const BorderSide(color: Colors.white, width: 2)
+                    : BorderSide.none,
+              ),
             ),
-          ),
-          onPressed: () => controller.handleButtonTap(index, routeName),
-          child: isLoading
-              ? const SizedBox(
-            width: 24,
-            height: 24,
-            child: CircularProgressIndicator(
-              color: Colors.white,
-              strokeWidth: 2,
-            ),
-          )
-              : Text(
-            text,
-            style: TextStyle(
-              fontFamily: AppFonts.interMedium,
-              color: isLoading ? Colors.white : Colors.black,
-              fontSize: 18,
+            onPressed: () => controller.handleButtonTap(index, routeName),
+            child: isLoading
+                ? SizedBox(
+              width: mq.width * 0.05,
+              height: mq.width * 0.05,
+              child: const CircularProgressIndicator(
+                color: Colors.white,
+                strokeWidth: 2,
+              ),
+            )
+                : Text(
+              text,
+              style: TextStyle(
+                fontFamily: AppFonts.interMedium,
+                color: isLoading ? Colors.white : Colors.black,
+                fontSize: mq.width * 0.04,
+              ),
             ),
           ),
         ),

@@ -10,109 +10,121 @@ class CreateTeamPage2 extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final CreateTeamController controller = Get.find<CreateTeamController>();
+    final mq = MediaQuery.of(context).size;
 
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          icon: Icon(Icons.arrow_back, color: Colors.black, size: mq.width * 0.07),
           onPressed: () => Get.back(),
         ),
-        title: const Text(
+        title: Text(
           AppLabels.newteam,
           style: TextStyle(
             fontFamily: AppFonts.interRegular,
-            fontSize: 20,
+            fontSize: mq.width * 0.05,
             color: Colors.black,
             fontWeight: FontWeight.bold,
           ),
         ),
         centerTitle: true,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Email Input
-            const Text(
-              AppLabels.Email,
-              style: TextStyle(
-                fontFamily: AppFonts.interBold,
-                fontSize: 16,
-                color: Colors.black,
-              ),
-            ),
-            const SizedBox(height: 8),
-            TextFormField(
-              controller: controller.emailController,
-              keyboardType: TextInputType.emailAddress,
-              onFieldSubmitted: (value) {
-                controller.addEmail();
-              },
-              decoration: const InputDecoration(
-                hintText: AppLabels.emailhint,
-                contentPadding: EdgeInsets.symmetric(vertical: 15),
-                enabledBorder: UnderlineInputBorder(
-                  borderSide: BorderSide(color: Colors.grey, width: 1.5),
-                ),
-                focusedBorder: UnderlineInputBorder(
-                  borderSide: BorderSide(color: Colors.black, width: 1.5),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: EdgeInsets.all(mq.width * 0.05),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Email Input Label
+              Text(
+                AppLabels.Email,
+                style: TextStyle(
+                  fontFamily: AppFonts.interBold,
+                  fontSize: mq.width * 0.042,
+                  color: Colors.black,
                 ),
               ),
-            ),
-            const SizedBox(height: 20),
+              SizedBox(height: mq.height * 0.01),
 
-            // Display of added emails as chips
-            Obx(
-                  () => Wrap(
-                spacing: 8.0,
-                runSpacing: 8.0,
-                children: controller.invitedEmails.map((email) {
-                  return Chip(
-                    label: Text(email),
-                    onDeleted: () => controller.removeEmail(email),
-                    deleteIcon: const Icon(Icons.close),
-                    backgroundColor: Colors.grey[200],
-                  );
-                }).toList(),
+              // Email Text Field
+              TextFormField(
+                controller: controller.emailController,
+                keyboardType: TextInputType.emailAddress,
+                onFieldSubmitted: (value) {
+                  controller.addEmail();
+                },
+                decoration: InputDecoration(
+                  hintText: AppLabels.emailhint,
+                  hintStyle: TextStyle(fontSize: mq.width * 0.04),
+                  contentPadding: EdgeInsets.symmetric(vertical: mq.height * 0.018),
+                  enabledBorder: const UnderlineInputBorder(
+                    borderSide: BorderSide(color: Colors.grey, width: 1.5),
+                  ),
+                  focusedBorder: const UnderlineInputBorder(
+                    borderSide: BorderSide(color: Colors.black, width: 1.5),
+                  ),
+                ),
+                style: TextStyle(fontSize: mq.width * 0.043),
               ),
-            ),
-            const SizedBox(height: 10),
+              SizedBox(height: mq.height * 0.02),
 
-            // Terms and Conditions text
-            const Text(
-              "By creating a team, I accept the term of service and its mandatory arbitration provision and acknowledge the privacy notice and acceptable use policy.",
-              style: TextStyle(
-                fontFamily: AppFonts.interRegular,
-                fontSize: 12,
-                color: Colors.black54,
+              // Display added emails as chips
+              Obx(
+                    () => Wrap(
+                  spacing: mq.width * 0.02,
+                  runSpacing: mq.height * 0.01,
+                  children: controller.invitedEmails.map((email) {
+                    return Chip(
+                      label: Text(
+                        email,
+                        style: TextStyle(fontSize: mq.width * 0.038),
+                      ),
+                      onDeleted: () => controller.removeEmail(email),
+                      deleteIcon: Icon(Icons.close, size: mq.width * 0.045),
+                      backgroundColor: Colors.grey[200],
+                    );
+                  }).toList(),
+                ),
               ),
-            ),
-          ],
+              SizedBox(height: mq.height * 0.015),
+
+              // Terms and Conditions text
+              Text(
+                "By creating a team, I accept the term of service and its mandatory arbitration provision and acknowledge the privacy notice and acceptable use policy.",
+                style: TextStyle(
+                  fontFamily: AppFonts.interRegular,
+                  fontSize: mq.width * 0.032,
+                  color: Colors.black54,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
-      bottomNavigationBar: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: SizedBox(
-          width: double.infinity,
-          child: ElevatedButton(
-            onPressed: controller.sendInvites,
-            style: ElevatedButton.styleFrom(
-              minimumSize: const Size(double.infinity, 55),
-              backgroundColor: Colors.black,
-              padding: const EdgeInsets.symmetric(vertical: 18),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(30),
+      bottomNavigationBar: SafeArea(
+        child: Padding(
+          padding: EdgeInsets.all(mq.width * 0.05),
+          child: SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: controller.sendInvites,
+              style: ElevatedButton.styleFrom(
+                minimumSize: Size(double.infinity, mq.height * 0.065),
+                backgroundColor: Colors.black,
+                padding: EdgeInsets.symmetric(vertical: mq.height * 0.02),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(mq.width * 0.08),
+                ),
               ),
-            ),
-            child: const Text(
-              "Send",
-              style: TextStyle(
-                fontFamily: AppFonts.interBold,
-                color: Colors.white,
-                fontSize: 16,
+              child: Text(
+                "Send",
+                style: TextStyle(
+                  fontFamily: AppFonts.interBold,
+                  color: Colors.white,
+                  fontSize: mq.width * 0.045,
+                ),
               ),
             ),
           ),

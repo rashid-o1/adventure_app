@@ -31,208 +31,210 @@ class CreateEventPage extends StatelessWidget {
         ),
         centerTitle: true,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Event Name
-            const Text(
-              AppLabels.eventtitle,
-              style: TextStyle(
-                fontFamily: AppFonts.interBold,
-                fontSize: 16,
-                color: Colors.black,
-              ),
-            ),
-            const SizedBox(height: 8),
-            TextFormField(
-              controller: controller.eventNameController,
-              decoration: const InputDecoration(
-                hintText: "Team Sha79",
-                contentPadding: EdgeInsets.symmetric(vertical: 15),
-                enabledBorder: UnderlineInputBorder(
-                  borderSide: BorderSide(color: Colors.grey, width: 1.5),
-                ),
-                focusedBorder: UnderlineInputBorder(
-                  borderSide: BorderSide(color: Colors.black, width: 1.5),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(20.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Event Name
+              const Text(
+                AppLabels.eventtitle,
+                style: TextStyle(
+                  fontFamily: AppFonts.interBold,
+                  fontSize: 16,
+                  color: Colors.black,
                 ),
               ),
-            ),
-            const SizedBox(height: 10),
-
-            // Description
-            const Text(
-              AppLabels.eventdescriptiontitle,
-              style: TextStyle(
-                fontFamily: AppFonts.interBold,
-                fontSize: 16,
-                color: Colors.black,
-              ),
-            ),
-            const SizedBox(height: 8),
-            TextFormField(
-              controller: controller.descriptionController,
-              maxLines: 3,
-              decoration: InputDecoration(
-                hintText: AppLabels.eventdescriptionhint,
-                contentPadding: const EdgeInsets.symmetric(vertical: 15),
-                enabledBorder: const UnderlineInputBorder(
-                  borderSide: BorderSide(color: Colors.grey, width: 1.5),
-                ),
-                focusedBorder: const UnderlineInputBorder(
-                  borderSide: BorderSide(color: Colors.black, width: 1.5),
-                ),
-              ),
-            ),
-            const SizedBox(height: 10),
-
-            // Instructions
-            const Text(
-              AppLabels.instructiontitle,
-              style: TextStyle(
-                fontFamily: AppFonts.interBold,
-                fontSize: 16,
-                color: Colors.black,
-              ),
-            ),
-            const SizedBox(height: 8),
-            TextFormField(
-              controller: controller.instructionsController,
-              maxLines: 3,
-              decoration: const InputDecoration(
-                hintText: AppLabels.instructionhint,
-                contentPadding: EdgeInsets.symmetric(vertical: 15),
-                enabledBorder: UnderlineInputBorder(
-                  borderSide: BorderSide(color: Colors.grey, width: 1.5),
-                ),
-                focusedBorder: UnderlineInputBorder(
-                  borderSide: BorderSide(color: Colors.black, width: 1.5),
-                ),
-              ),
-            ),
-            const SizedBox(height: 20),
-
-            // Select Date & Time
-            Row(
-              children: [
-                Expanded(
-                  child: _buildDateTimePicker(
-                    context,
-                    label: "Select Date",
-                    icon: Icons.keyboard_arrow_down,
-                    onTap: () => controller.selectDate(context),
-                    displayValue: controller.selectedDate,
-                    isDate: true, // New parameter
+              const SizedBox(height: 8),
+              TextFormField(
+                controller: controller.eventNameController,
+                decoration: const InputDecoration(
+                  hintText: "Team Sha79",
+                  contentPadding: EdgeInsets.symmetric(vertical: 15),
+                  enabledBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(color: Colors.grey, width: 1.5),
+                  ),
+                  focusedBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(color: Colors.black, width: 1.5),
                   ),
                 ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: _buildDateTimePicker(
-                    context,
-                    label: "Select Time",
-                    icon: Icons.keyboard_arrow_down,
-                    onTap: () => controller.selectTime(context),
-                    displayValue: controller.selectedTime,
-                    isDate: false, // New parameter
+              ),
+              const SizedBox(height: 10),
+
+              // Description
+              const Text(
+                AppLabels.eventdescriptiontitle,
+                style: TextStyle(
+                  fontFamily: AppFonts.interBold,
+                  fontSize: 16,
+                  color: Colors.black,
+                ),
+              ),
+              const SizedBox(height: 8),
+              TextFormField(
+                controller: controller.descriptionController,
+                maxLines: 3,
+                decoration: InputDecoration(
+                  hintText: AppLabels.eventdescriptionhint,
+                  contentPadding: const EdgeInsets.symmetric(vertical: 15),
+                  enabledBorder: const UnderlineInputBorder(
+                    borderSide: BorderSide(color: Colors.grey, width: 1.5),
+                  ),
+                  focusedBorder: const UnderlineInputBorder(
+                    borderSide: BorderSide(color: Colors.black, width: 1.5),
                   ),
                 ),
-              ],
-            ),
-            const SizedBox(height: 20),
+              ),
+              const SizedBox(height: 10),
 
-            // Location
-            const Text(
-              "Location",
-              style: TextStyle(
-                fontFamily: AppFonts.interBold,
-                fontSize: 16,
-                color: Colors.black,
-              ),
-            ),
-            const SizedBox(height: 8),
-            TextFormField(
-              controller: controller.locationController,
-              decoration: const InputDecoration(
-                hintText: "XYYZZ",
-                contentPadding: EdgeInsets.symmetric(vertical: 15),
-                enabledBorder: UnderlineInputBorder(
-                  borderSide: BorderSide(color: Colors.grey, width: 1.5),
-                ),
-                focusedBorder: UnderlineInputBorder(
-                  borderSide: BorderSide(color: Colors.black, width: 1.5),
+              // Instructions
+              const Text(
+                AppLabels.instructiontitle,
+                style: TextStyle(
+                  fontFamily: AppFonts.interBold,
+                  fontSize: 16,
+                  color: Colors.black,
                 ),
               ),
-            ),
-            const SizedBox(height: 10),
-            GestureDetector(
-              onTap: controller.useCurrentLocation,
-              child: const Row(
+              const SizedBox(height: 8),
+              TextFormField(
+                controller: controller.instructionsController,
+                maxLines: 3,
+                decoration: const InputDecoration(
+                  hintText: AppLabels.instructionhint,
+                  contentPadding: EdgeInsets.symmetric(vertical: 15),
+                  enabledBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(color: Colors.grey, width: 1.5),
+                  ),
+                  focusedBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(color: Colors.black, width: 1.5),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+
+              // Select Date & Time
+              Row(
                 children: [
-                  Icon(Icons.add_location_alt_outlined, size: 20),
-                  SizedBox(width: 8),
-                  Text(
-                    AppLabels.currentlocation,
-                    style: TextStyle(
-                      fontFamily: AppFonts.interRegular,
-                      fontSize: 14,
-                      color: Colors.black,
+                  Expanded(
+                    child: _buildDateTimePicker(
+                      context,
+                      label: "Select Date",
+                      icon: Icons.keyboard_arrow_down,
+                      onTap: () => controller.selectDate(context),
+                      displayValue: controller.selectedDate,
+                      isDate: true, // New parameter
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: _buildDateTimePicker(
+                      context,
+                      label: "Select Time",
+                      icon: Icons.keyboard_arrow_down,
+                      onTap: () => controller.selectTime(context),
+                      displayValue: controller.selectedTime,
+                      isDate: false, // New parameter
                     ),
                   ),
                 ],
               ),
-            ),
-            const SizedBox(height: 40),
+              const SizedBox(height: 20),
 
-            // Upload PDF Button
-            SizedBox(
-              width: double.infinity,
-              child: OutlinedButton(
-                onPressed: () {},
-                style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 18),
-                  minimumSize: const Size(double.infinity, 55),
-                  side: const BorderSide(color: Colors.black, width: 2),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
-                  ),
+              // Location
+              const Text(
+                "Location",
+                style: TextStyle(
+                  fontFamily: AppFonts.interBold,
+                  fontSize: 16,
+                  color: Colors.black,
                 ),
-                child: const Text(
-                  "Upload PDF",
-                  style: TextStyle(
-                    fontFamily: AppFonts.interBold,
-                    color: Colors.black,
-                    fontSize: 16,
+              ),
+              const SizedBox(height: 8),
+              TextFormField(
+                controller: controller.locationController,
+                decoration: const InputDecoration(
+                  hintText: "XYYZZ",
+                  contentPadding: EdgeInsets.symmetric(vertical: 15),
+                  enabledBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(color: Colors.grey, width: 1.5),
+                  ),
+                  focusedBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(color: Colors.black, width: 1.5),
                   ),
                 ),
               ),
-            ),
-            const SizedBox(height: 16),
-
-            // Confirm & Next Button
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: controller.confirmAndNext,
-                style: ElevatedButton.styleFrom(
-                  minimumSize: const Size(double.infinity, 55),
-                  backgroundColor: Colors.black,
-                  padding: const EdgeInsets.symmetric(vertical: 18),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
-                  ),
+              const SizedBox(height: 10),
+              GestureDetector(
+                onTap: controller.useCurrentLocation,
+                child: const Row(
+                  children: [
+                    Icon(Icons.add_location_alt_outlined, size: 20),
+                    SizedBox(width: 8),
+                    Text(
+                      AppLabels.currentlocation,
+                      style: TextStyle(
+                        fontFamily: AppFonts.interRegular,
+                        fontSize: 14,
+                        color: Colors.black,
+                      ),
+                    ),
+                  ],
                 ),
-                child: const Text(
-                  AppLabels.confirmnext,
-                  style: TextStyle(
-                    fontFamily: AppFonts.interBold,
-                    color: Colors.white,
-                    fontSize: 16,
+              ),
+              const SizedBox(height: 40),
+
+              // Upload PDF Button
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton(
+                  onPressed: () {},
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 18),
+                    minimumSize: const Size(double.infinity, 55),
+                    side: const BorderSide(color: Colors.black, width: 2),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                  ),
+                  child: const Text(
+                    "Upload PDF",
+                    style: TextStyle(
+                      fontFamily: AppFonts.interBold,
+                      color: Colors.black,
+                      fontSize: 16,
+                    ),
                   ),
                 ),
               ),
-            ),
-          ],
+              const SizedBox(height: 16),
+
+              // Confirm & Next Button
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: controller.confirmAndNext,
+                  style: ElevatedButton.styleFrom(
+                    minimumSize: const Size(double.infinity, 55),
+                    backgroundColor: Colors.black,
+                    padding: const EdgeInsets.symmetric(vertical: 18),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                  ),
+                  child: const Text(
+                    AppLabels.confirmnext,
+                    style: TextStyle(
+                      fontFamily: AppFonts.interBold,
+                      color: Colors.white,
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

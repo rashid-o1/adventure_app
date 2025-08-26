@@ -15,7 +15,12 @@ class SuperAdminHome extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final SuperAdminHomeController controller = Get.put(SuperAdminHomeController());
+    final SuperAdminHomeController controller =
+    Get.put(SuperAdminHomeController());
+
+    final size = MediaQuery.of(context).size;
+    final height = size.height;
+    final width = size.width;
 
     final List<Widget> pages = [
       const EventsPage(),
@@ -26,175 +31,185 @@ class SuperAdminHome extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Stack(
-        children: [
-          SafeArea(
-            child: Column(
+      appBar: AppBar(
+        backgroundColor: Colors.black,
+        centerTitle: true,
+        title: Text(
+          controller.currentTitle,
+          style: TextStyle(
+            fontFamily: AppFonts.interBold,
+            fontSize: width * 0.055,
+            color: Colors.white,
+          ),
+        ),
+      ),
+      body: SafeArea(
+        top: false, // ✅ exclude AppBar area from SafeArea
+        child: Stack(
+          children: [
+            Column(
               children: [
-                // AppBar Section (Black Background)
-                Container(
-                  color: Colors.black,
-                  height: 70,
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          controller.currentTitle,
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            fontFamily: AppFonts.interRegular,
-                            fontSize: 22,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                      // IconButton(
-                      //   icon: const Icon(Icons.search, color: Colors.white),
-                      //   onPressed: () {},
-                      // ),
-                      // IconButton(
-                      //   icon: const Icon(Icons.add, color: Colors.white),
-                      //   onPressed: () {},
-                      // ),
-                    ],
-                  ),
-                ),
-                // Tab Bar Section
+                // Tabs Row
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  padding: EdgeInsets.symmetric(
+                      horizontal: width * 0.05, vertical: height * 0.012),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
-                      _buildTab(context, controller, "Events", 0),
-                      _buildTab(context, controller, "Teams", 1),
-                      _buildTab(context, controller, "Tasks", 2),
-                      _buildTab(context, controller, "Equipment", 3),
+                      _buildTab(context, controller, "Events", 0, width),
+                      _buildTab(context, controller, "Teams", 1, width),
+                      _buildTab(context, controller, "Tasks", 2, width),
+                      _buildTab(context, controller, "Equipment", 3, width),
                     ],
                   ),
                 ),
 
-                // Main Content Area (Dynamic based on selected tab and hasContent)
+                // Pages content
                 Expanded(
                   child: Obx(() {
-                    if (controller.hasContent[controller.selectedTabIndex.value] == false) {
+                    if (controller.hasContent[
+                    controller.selectedTabIndex.value] ==
+                        false) {
                       return const EventsPage();
                     } else {
                       return pages[controller.selectedTabIndex.value];
                     }
                   }),
                 ),
-                // "Invite Admins" button (Conditional)
-                Obx(() => controller.selectedTabIndex.value == 0 && !controller.hasContent[0]
+
+                // Bottom Placeholder for Events Tab
+                Obx(() => controller.selectedTabIndex.value == 0 &&
+                    !controller.hasContent[0]
                     ? Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+                  padding: EdgeInsets.symmetric(
+                      horizontal: width * 0.05,
+                      vertical: height * 0.025),
                   child: Column(
                     children: [
                       Text(
                         "All you need is their email address.",
                         style: TextStyle(
                           fontFamily: AppFonts.interRegular,
-                          fontSize: 14,
+                          fontSize: width * 0.037,
                           color: Colors.grey[600],
                         ),
                       ),
-                      const SizedBox(height: 10),
+                      SizedBox(height: height * 0.012),
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton(
                           onPressed: controller.inviteAdmins,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.white54,
-                            padding: const EdgeInsets.symmetric(vertical: 18),
+                            padding: EdgeInsets.symmetric(
+                                vertical: height * 0.022),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(25),
                               side: const BorderSide(color: Colors.black),
                             ),
                           ),
-                          child: const Text(
+                          child: Text(
                             "Invite Admins",
                             style: TextStyle(
                               fontFamily: AppFonts.interBold,
                               color: Colors.black,
-                              fontSize: 16,
+                              fontSize: width * 0.042,
                             ),
                           ),
-                        ),)
+                        ),
+                      )
                     ],
                   ),
                 )
                     : const SizedBox.shrink()),
               ],
             ),
-          ),
-          // Floating Action Button Menu Overlay
-          Obx(() => controller.isFabExpanded.value
-              ? GestureDetector(
-            onTap: controller.toggleFab,
-            child: Container(
-              color: Colors.black.withOpacity(0.6),
-            ),
-          )
-              : const SizedBox.shrink()),
-          // Floating Action Button Menu
-          Obx(() {
-            final double bottomPosition =
-            controller.selectedTabIndex.value == 0 && !controller.hasContent[0]
-                ? 180.0 // Adjusted for when "Invite Admins" is shown
-                : 110.0; // Regular position
-            return Positioned(
-              bottom: bottomPosition,
-              right: 16,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  if (controller.isFabExpanded.value) ...[
-                    _buildFabMenuItem(
-                        "Create Event", Icons.group, () => Get.to(() => CreateEventPage())),
-                    const SizedBox(height: 10),
-                    _buildFabMenuItem(
-                        "Create Task", Icons.assignment, () => Get.to(() => CreateTaskPage())),
-                    const SizedBox(height: 10),
-                    _buildFabMenuItem(
-                        "Team Invite", Icons.person_add, () => Get.to(() =>  CreateTeamPage())),
-                    const SizedBox(height: 10),
-                    _buildFabMenuItem(
-                        "New message", Icons.chat_bubble_outline, () => Get.to(() => ())),
-                  ],
-                ],
+
+            // FAB overlay background
+            Obx(() => controller.isFabExpanded.value
+                ? GestureDetector(
+              onTap: controller.toggleFab,
+              child: Container(
+                color: Colors.black.withOpacity(0.6),
               ),
-            );
-          }),
-          // Main Floating Action Button
-          Obx(() {
-            final double bottomPosition =
-            controller.selectedTabIndex.value == 0 && !controller.hasContent[0]
-                ? 110.0 // Adjusted for when "Invite Admins" is shown
-                : 40.0; // Regular position
-            return Positioned(
-              bottom: bottomPosition,
-              right: 16,
-              child: FloatingActionButton(
-                onPressed: controller.toggleFab,
-                backgroundColor: Colors.black,
-                shape: const CircleBorder(),
-                child: AnimatedRotation(
-                  turns: controller.isFabExpanded.value ? 0.25 : 0,
-                  duration: const Duration(milliseconds: 300),
-                  child: Icon(
-                    controller.isFabExpanded.value ? Icons.close : Icons.add,
-                    color: Colors.white,
+            )
+                : const SizedBox.shrink()),
+
+            // FAB Menu Items
+            Obx(() {
+              final double bottomPosition =
+              controller.selectedTabIndex.value == 0 &&
+                  !controller.hasContent[0]
+                  ? height * 0.22
+                  : height * 0.13;
+              return Positioned(
+                bottom: bottomPosition,
+                right: width * 0.04,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    if (controller.isFabExpanded.value) ...[
+                      _buildFabMenuItem(
+                          "Create Event",
+                          Icons.group,
+                              () => Get.to(() => const CreateEventPage()),
+                          width),
+                      SizedBox(height: height * 0.012),
+                      _buildFabMenuItem(
+                          "Create Task",
+                          Icons.assignment,
+                              () => Get.to(() => const CreateTaskPage()),
+                          width),
+                      SizedBox(height: height * 0.012),
+                      _buildFabMenuItem(
+                          "Team Invite",
+                          Icons.person_add,
+                              () => Get.to(() => const CreateTeamPage()),
+                          width),
+                      SizedBox(height: height * 0.012),
+                      _buildFabMenuItem("New message", Icons.chat_bubble_outline,
+                              () {}, width),
+                    ],
+                  ],
+                ),
+              );
+            }),
+
+            // Main FAB Button
+            Obx(() {
+              final double bottomPosition =
+              controller.selectedTabIndex.value == 0 &&
+                  !controller.hasContent[0]
+                  ? height * 0.13
+                  : height * 0.05;
+              return Positioned(
+                bottom: bottomPosition,
+                right: width * 0.04,
+                child: FloatingActionButton(
+                  onPressed: controller.toggleFab,
+                  backgroundColor: Colors.black,
+                  shape: const CircleBorder(),
+                  child: AnimatedRotation(
+                    turns: controller.isFabExpanded.value ? 0.25 : 0,
+                    duration: const Duration(milliseconds: 300),
+                    child: Icon(
+                      controller.isFabExpanded.value ? Icons.close : Icons.add,
+                      color: Colors.white,
+                      size: width * 0.07,
+                    ),
                   ),
                 ),
-              ),
-            );
-          }),
-        ],
+              );
+            }),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildTab(BuildContext context, SuperAdminHomeController controller, String title, int index) {
+  // 🔹 Build Tab
+  Widget _buildTab(BuildContext context, SuperAdminHomeController controller,
+      String title, int index, double width) {
     return Obx(() {
       final isSelected = controller.selectedTabIndex.value == index;
       return GestureDetector(
@@ -202,18 +217,20 @@ class SuperAdminHome extends StatelessWidget {
         child: Container(
           decoration: isSelected
               ? const BoxDecoration(
-              border: Border(
-                bottom: BorderSide(
-                  color: Colors.black,
-                  width: 2.0,
-                ),
-              ) )
+            border: Border(
+              bottom: BorderSide(
+                color: Colors.black,
+                width: 2.0,
+              ),
+            ),
+          )
               : null,
           child: AnimatedDefaultTextStyle(
             duration: const Duration(milliseconds: 200),
             style: TextStyle(
-              fontFamily: isSelected ? AppFonts.interBold : AppFonts.interRegular,
-              fontSize: isSelected ? 19 : 18,
+              fontFamily:
+              isSelected ? AppFonts.interBold : AppFonts.interRegular,
+              fontSize: isSelected ? width * 0.048 : width * 0.045,
               fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
               color: isSelected ? Colors.black : Colors.grey[600],
             ),
@@ -224,13 +241,16 @@ class SuperAdminHome extends StatelessWidget {
     });
   }
 
-  Widget _buildFabMenuItem(String label, IconData icon, VoidCallback onTap) {
+  // 🔹 Build FAB Menu
+  Widget _buildFabMenuItem(
+      String label, IconData icon, VoidCallback onTap, double width) {
     return GestureDetector(
       onTap: onTap,
       child: Row(
         children: [
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            padding: EdgeInsets.symmetric(
+                horizontal: width * 0.025, vertical: width * 0.012),
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(7),
@@ -244,15 +264,15 @@ class SuperAdminHome extends StatelessWidget {
             ),
             child: Text(
               label,
-              style: const TextStyle(
+              style: TextStyle(
                 fontFamily: AppFonts.interRegular,
-                fontSize: 16,
+                fontSize: width * 0.04,
               ),
             ),
           ),
-          const SizedBox(width: 8),
+          SizedBox(width: width * 0.02),
           Container(
-            padding: const EdgeInsets.all(12),
+            padding: EdgeInsets.all(width * 0.03),
             decoration: BoxDecoration(
               color: Colors.white,
               shape: BoxShape.circle,
@@ -264,12 +284,10 @@ class SuperAdminHome extends StatelessWidget {
                 ),
               ],
             ),
-            child: Icon(icon, color: Colors.black),
+            child: Icon(icon, color: Colors.black, size: width * 0.055),
           )
         ],
       ),
     );
   }
 }
-
-

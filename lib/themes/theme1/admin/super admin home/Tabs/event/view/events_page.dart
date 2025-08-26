@@ -18,9 +18,9 @@ class EventsPage extends StatelessWidget {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Search Bar (Unchanged)
+            // 🔍 Search Bar
             Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: EdgeInsets.all(MediaQuery.of(context).size.width * 0.04),
               child: Container(
                 decoration: BoxDecoration(
                   color: Colors.grey.shade100,
@@ -41,7 +41,7 @@ class EventsPage extends StatelessWidget {
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(20),
-                      borderSide: const BorderSide(color: Colors.black, width: 1.8), // 👈 black border on input
+                      borderSide: const BorderSide(color: Colors.black, width: 1.8),
                     ),
                     contentPadding: const EdgeInsets.all(16.0),
                   ),
@@ -49,7 +49,7 @@ class EventsPage extends StatelessWidget {
               ),
             ),
 
-            // Recent Heading (Unchanged)
+            // 📌 Recent Heading
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 16.0),
               child: Text(
@@ -63,7 +63,8 @@ class EventsPage extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 10),
-            // List of Event Cards (Unchanged)
+
+            // 📝 Event List
             Expanded(
               child: ListView.builder(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -76,37 +77,39 @@ class EventsPage extends StatelessWidget {
           ],
         );
       } else {
-        // Placeholder UI (Unchanged)
+        // ⏳ Placeholder
         return Column(
           children: [
             Expanded(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Text(
-                    "Add a New Event!",
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontFamily: AppFonts.interBold,
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 40.0),
-                    child: Text(
-                      "Invite the New Location Admins to their new Event and Management App",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontFamily: AppFonts.interRegular,
-                        fontSize: 16,
-                        color: Colors.grey[600],
+              child: Center(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 30.0),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text(
+                        "Add a New Event!",
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontFamily: AppFonts.interBold,
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
+                        ),
                       ),
-                    ),
+                      const SizedBox(height: 10),
+                      Text(
+                        "Invite the New Location Admins to their new Event and Management App",
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontFamily: AppFonts.interRegular,
+                          fontSize: 16,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
             ),
           ],

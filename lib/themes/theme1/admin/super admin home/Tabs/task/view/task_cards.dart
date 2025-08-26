@@ -8,121 +8,127 @@ class TaskCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    final width = size.width;
+    final height = size.height;
+
     const String placeholderImageUrl = 'https://tse1.mm.bing.net/th/id/OIP.CY8V1q5jIto0DasNLa_QegHaFS?rs=1&pid=ImgDetMain&o=7&rm=3';
 
-    return SizedBox(
-      height: 140,
-      child: Card(
-        color: Colors.grey.shade100,
-        elevation: 3.0,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(7),
-        ),
-        margin: const EdgeInsets.symmetric(vertical: 8.0),
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(7),
-                child: Image.network(
-                  taskData['image'] ?? placeholderImageUrl,
-                  width: 120,
-                  height: 120,
-                  fit: BoxFit.cover,
-                  loadingBuilder: (context, child, loadingProgress) {
-                    if (loadingProgress == null) return child;
-                    return const Center(child: CircularProgressIndicator());
-                  },
-                  errorBuilder: (context, error, stackTrace) {
-                    return Image.network(
-                      placeholderImageUrl,
-                      width: 120,
-                      height: 120,
-                      fit: BoxFit.cover,
-                    );
-                  },
+    return SafeArea(
+      child: SizedBox(
+        height: height * 0.18,
+        child: Card(
+          color: Colors.grey.shade100,
+          elevation: 3.0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(7),
+          ),
+          margin: EdgeInsets.symmetric(vertical: height * 0.01),
+          child: Padding(
+            padding: EdgeInsets.all(width * 0.02),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(7),
+                  child: Image.network(
+                    taskData['image'] ?? placeholderImageUrl,
+                    width: width * 0.28,
+                    height: height * 0.16,
+                    fit: BoxFit.cover,
+                    loadingBuilder: (context, child, loadingProgress) {
+                      if (loadingProgress == null) return child;
+                      return const Center(child: CircularProgressIndicator());
+                    },
+                    errorBuilder: (context, error, stackTrace) {
+                      return Image.network(
+                        placeholderImageUrl,
+                        width: width * 0.28,
+                        height: height * 0.16,
+                        fit: BoxFit.cover,
+                      );
+                    },
+                  ),
                 ),
-              ),
-              const SizedBox(width: 15),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          taskData['name'] ?? 'N/A',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            fontFamily: AppFonts.interBold,
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
+                SizedBox(width: width * 0.04),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            taskData['name'] ?? 'N/A',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontFamily: AppFonts.interBold,
+                              fontSize: width * 0.035,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 5),
-                        Text(
-                          taskData['description'] ?? 'No description available',
-                          maxLines: 3,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontFamily: AppFonts.interRegular,
-                            fontSize: 10,
-                            color: Colors.grey[600],
+                          SizedBox(height: height * 0.005),
+                          Text(
+                            taskData['description'] ?? 'No description available',
+                            maxLines: 3,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontFamily: AppFonts.interRegular,
+                              fontSize: width * 0.03,
+                              color: Colors.grey[600],
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            const Icon(Icons.location_on, size: 16, color: Colors.grey),
-                            const SizedBox(width: 5),
-                            Expanded(
-                              child: Text(
-                                taskData['location'] ?? 'No location specified',
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  fontFamily: AppFonts.interRegular,
-                                  fontSize: 11,
-                                  color: Colors.grey[800],
+                        ],
+                      ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(Icons.location_on, size: width * 0.04, color: Colors.grey),
+                              SizedBox(width: width * 0.015),
+                              Expanded(
+                                child: Text(
+                                  taskData['location'] ?? 'No location specified',
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    fontFamily: AppFonts.interRegular,
+                                    fontSize: width * 0.032,
+                                    color: Colors.grey[800],
+                                  ),
                                 ),
                               ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 5),
-                        Row(
-                          children: [
-                            const Icon(Icons.calendar_today, size: 14, color: Colors.grey),
-                            const SizedBox(width: 7),
-                            Expanded(
-                              child: Text(
-                                taskData['date'] ?? 'No date specified',
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  fontFamily: AppFonts.interRegular,
-                                  fontSize: 11,
-                                  color: Colors.grey[800],
+                            ],
+                          ),
+                          SizedBox(height: height * 0.005),
+                          Row(
+                            children: [
+                              Icon(Icons.calendar_today, size: width * 0.038, color: Colors.grey),
+                              SizedBox(width: width * 0.018),
+                              Expanded(
+                                child: Text(
+                                  taskData['date'] ?? 'No date specified',
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    fontFamily: AppFonts.interRegular,
+                                    fontSize: width * 0.032,
+                                    color: Colors.grey[800],
+                                  ),
                                 ),
                               ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ],
+                            ],
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

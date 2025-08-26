@@ -38,6 +38,7 @@ dependencies:
   intl : any
   geolocator: any
   flutter_spinkit : any
+  image_picker: ^1.2.0
 
 dev_dependencies:
   flutter_test:
