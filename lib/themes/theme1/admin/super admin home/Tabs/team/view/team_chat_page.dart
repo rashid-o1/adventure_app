@@ -1,44 +1,12 @@
-import 'package:adventure_app/themes/theme1/admin/super%20admin%20home/Tabs/team/view/team_view_page.dart';
-import 'package:adventure_app/themes/theme1/admin/super%20admin%20home/Tabs/team/view/view_tabs/team_image_detail_page.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import '../../../../../../../core/utils/style/app_fonts.dart';
-import '../controller/team_controller.dart';
 
-class _DateHeader extends StatelessWidget {
-  final String date;
+import 'package:adventure_app/core/utils/style/app_fonts.dart';
+import 'package:adventure_app/themes/theme1/admin/super%20admin%20home/Tabs/team/view/team_view_page.dart';
+import 'package:adventure_app/themes/theme1/admin/super%20admin%20home/Tabs/team/view/view_tabs/team_image_detail_page.dart';
+import 'package:adventure_app/themes/theme1/admin/super%20admin%20home/Tabs/team/controller/team_controller.dart';
 
-  const _DateHeader({required this.date});
-
-  @override
-  Widget build(BuildContext context) {
-    final width = MediaQuery.of(context).size.width;
-    final fontSize = width * 0.035;
-
-    return Padding(
-      padding: EdgeInsets.symmetric(vertical: width * 0.03),
-      child: Center(
-        child: Container(
-          padding: EdgeInsets.symmetric(
-              horizontal: width * 0.04, vertical: width * 0.015),
-          decoration: BoxDecoration(
-            color: Colors.grey.shade300,
-            borderRadius: BorderRadius.circular(width * 0.05),
-          ),
-          child: Text(
-            date,
-            style: TextStyle(
-              fontFamily: AppFonts.interRegular,
-              fontSize: fontSize,
-              color: Colors.grey.shade800,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
 
 class TeamChatPage extends StatelessWidget {
   final Map<String, String> teamData;
@@ -46,29 +14,134 @@ class TeamChatPage extends StatelessWidget {
 
   TeamChatPage({super.key, required this.teamData});
 
-  String _formatDate(DateTime date) {
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
-    final yesterday = DateTime(now.year, now.month, now.day - 1);
-    final aDate = DateTime(date.year, date.month, date.day);
-
-    if (aDate == today) {
-      return "Today";
-    } else if (aDate == yesterday) {
-      return "Yesterday";
-    } else {
-      return DateFormat('MMMM d, y').format(date);
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final TeamController teamsController = Get.find();
     final width = MediaQuery.of(context).size.width;
 
+    // Reset searching state when entering the page
     teamsController.isSearching.value = false;
     teamsController.searchQuery.value = "";
 
+    return Scaffold(
+      appBar: _buildAppBar(context, teamsController, width),
+      body: SafeArea(
+        child: Column(
+          children: [
+            _buildSearchOrTitle(context, teamsController, width),
+            Divider(thickness: 1, color: Colors.grey.shade300),
+            _buildChatMessages(teamsController, width),
+            _buildMessageInput(context, teamsController, _messageController, width),
+          ],
+        ),
+      ),
+      backgroundColor: Colors.white,
+    );
+  }
+
+  AppBar _buildAppBar(BuildContext context, TeamController teamsController, double width) {
+    return AppBar(
+      backgroundColor: Colors.white,
+      title: Text(
+        teamData['name'] ?? "Team Chat",
+        style: TextStyle(
+          fontFamily: AppFonts.interRegular,
+          fontSize: width * 0.045,
+        ),
+      ),
+      centerTitle: true,
+      leading: IconButton(
+        icon: Icon(Icons.arrow_back, size: width * 0.06),
+        onPressed: () => Get.back(),
+      ),
+      actions: [
+        PopupMenuButton<String>(
+          onSelected: (value) {
+            if (value == "Search") {
+              teamsController.isSearching.value = true;
+            } else if (value == "View") {
+              Get.to(() => TeamViewPage(teamData: teamData));
+            }
+          },
+          color: Colors.grey[100],
+          itemBuilder: (BuildContext context) {
+            final items = ['View', 'Search', 'Pinned files'];
+            return items.map((item) {
+              return PopupMenuItem<String>(
+                value: item,
+                height: width * 0.1,
+                child: SizedBox(
+                  width: width * 0.35,
+                  child: Text(
+                    item,
+                    style: TextStyle(
+                      fontFamily: AppFonts.interRegular,
+                      fontSize: width * 0.04,
+                    ),
+                  ),
+                ),
+              );
+            }).toList();
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSearchOrTitle(BuildContext context, TeamController teamsController, double width) {
+    return Padding(
+      padding: EdgeInsets.all(width * 0.04),
+      child: Obx(() {
+        return teamsController.isSearching.value
+            ? _buildSearchBar(teamsController, width)
+            : Text(
+          "Get Started",
+          style: TextStyle(
+            fontFamily: AppFonts.interBold,
+            fontSize: width * 0.05,
+            fontWeight: FontWeight.bold,
+          ),
+        );
+      }),
+    );
+  }
+
+  Widget _buildSearchBar(TeamController teamsController, double width) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.grey.shade100,
+        borderRadius: BorderRadius.circular(width * 0.05),
+      ),
+      child: TextField(
+        onChanged: (value) => teamsController.searchQuery.value = value,
+        decoration: InputDecoration(
+          hintText: "Search here!",
+          hintStyle: TextStyle(color: Colors.grey, fontSize: width * 0.04),
+          suffixIcon: IconButton(
+            icon: Icon(Icons.close, color: Colors.grey, size: width * 0.05),
+            onPressed: () {
+              teamsController.isSearching.value = false;
+              teamsController.searchQuery.value = "";
+            },
+          ),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(width * 0.05),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(width * 0.05),
+            borderSide: BorderSide(color: Colors.grey, width: 1.5),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(width * 0.05),
+            borderSide: BorderSide(color: Colors.black, width: 1.8),
+          ),
+          contentPadding: EdgeInsets.all(width * 0.04),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildChatMessages(TeamController teamsController, double width) {
     final List<Map<String, dynamic>> chatMessages =
         teamsController.chatMessages[teamData['name']] ?? [];
 
@@ -79,170 +152,48 @@ class TeamChatPage extends StatelessWidget {
 
     for (var message in chatMessages) {
       final messageDate = message['timestamp'] as DateTime;
-      final currentDate =
-      DateTime(messageDate.year, messageDate.month, messageDate.day);
+      final currentDate = DateTime(messageDate.year, messageDate.month, messageDate.day);
 
       if (lastDate == null || currentDate != lastDate) {
-        groupedMessagesWidgets.add(_DateHeader(date: _formatDate(currentDate)));
+        groupedMessagesWidgets.add(_DateHeader(date: teamsController.formatDate(currentDate)));
         lastDate = currentDate;
       }
       groupedMessagesWidgets.add(ChatMessage(message: message));
     }
 
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        title: Text(
-          teamData['name'] ?? "Team Chat",
-          style: TextStyle(
-            fontFamily: AppFonts.interRegular,
-            fontSize: width * 0.045,
-          ),
-        ),
-        centerTitle: true,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, size: width * 0.06),
-          onPressed: () => Get.back(),
-        ),
-        actions: [
-          PopupMenuButton<String>(
-            onSelected: (value) {
-              if (value == "Search") {
-                teamsController.isSearching.value = true;
-              } else if (value == "View") {
-                Get.to(() => TeamViewPage(teamData: teamData));
-              }
-            },
-            color: Colors.grey[100],
-            itemBuilder: (BuildContext context) {
-              final items = ['View', 'Search', 'Pinned files'];
-              List<PopupMenuEntry<String>> menuItems = [];
+    return Expanded(
+      child: Obx(() {
+        final query = teamsController.searchQuery.value.toLowerCase();
+        final filteredMessages = query.isEmpty
+            ? groupedMessagesWidgets
+            : groupedMessagesWidgets.where((widget) {
+          if (widget is ChatMessage) {
+            final message = widget.message;
+            return (message['message'] ?? '').toLowerCase().contains(query) ||
+                (message['sender'] ?? '').toLowerCase().contains(query);
+          }
+          return false;
+        }).toList();
 
-              for (int i = 0; i < items.length; i++) {
-                menuItems.add(
-                  PopupMenuItem<String>(
-                    value: items[i],
-                    height: width * 0.1,
-                    child: SizedBox(
-                      width: width * 0.35,
-                      child: Text(
-                        items[i],
-                        style: TextStyle(
-                          fontFamily: AppFonts.interRegular,
-                          fontSize: width * 0.04,
-                        ),
-                      ),
-                    ),
-                  ),
-                );
-                if (i != items.length - 1) {
-                  menuItems.add(const PopupMenuDivider());
-                }
-              }
-              return menuItems;
-            },
-          ),
-        ],
-      ),
-      body: SafeArea(
-        child: Column(
-          children: [
-            Obx(() {
-              return Padding(
-                padding: EdgeInsets.all(width * 0.04),
-                child: teamsController.isSearching.value
-                    ? Container(
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade100,
-                    borderRadius: BorderRadius.circular(width * 0.05),
-                  ),
-                  child: TextField(
-                    onChanged: (value) =>
-                    teamsController.searchQuery.value = value,
-                    decoration: InputDecoration(
-                      hintText: "Search here!",
-                      hintStyle: TextStyle(
-                          color: Colors.grey, fontSize: width * 0.04),
-                      suffixIcon: IconButton(
-                        icon: Icon(Icons.close,
-                            color: Colors.grey, size: width * 0.05),
-                        onPressed: () {
-                          teamsController.isSearching.value = false;
-                          teamsController.searchQuery.value = "";
-                        },
-                      ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(width * 0.05),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(width * 0.05),
-                        borderSide:
-                        BorderSide(color: Colors.grey, width: 1.5),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(width * 0.05),
-                        borderSide: BorderSide(
-                            color: Colors.black, width: 1.8),
-                      ),
-                      contentPadding: EdgeInsets.all(width * 0.04),
-                    ),
-                  ),
-                )
-                    : Text(
-                  "Get Started",
-                  style: TextStyle(
-                    fontFamily: AppFonts.interBold,
-                    fontSize: width * 0.05,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              );
-            }),
-            Divider(thickness: 1, color: Colors.grey.shade300),
-            Expanded(
-              child: Obx(() {
-                final query = teamsController.searchQuery.value.toLowerCase();
-                final filteredMessages = query.isEmpty
-                    ? groupedMessagesWidgets
-                    : groupedMessagesWidgets.where((widget) {
-                  if (widget is ChatMessage) {
-                    final message = widget.message;
-                    return (message['message'] ?? '')
-                        .toLowerCase()
-                        .contains(query) ||
-                        (message['sender'] ?? '')
-                            .toLowerCase()
-                            .contains(query);
-                  }
-                  return false;
-                }).toList();
-
-                return ListView.builder(
-                  padding: EdgeInsets.symmetric(vertical: width * 0.02),
-                  itemCount: filteredMessages.length,
-                  itemBuilder: (context, index) {
-                    final item = filteredMessages[index];
-                    return Column(
-                      children: [
-                        item,
-                        if (item is ChatMessage)
-                          Divider(thickness: 1.0, color: Colors.grey.shade200),
-                      ],
-                    );
-                  },
-                );
-              }),
-            ),
-            _buildMessageInput(context, teamsController, _messageController),
-          ],
-        ),
-      ),
-      backgroundColor: Colors.white,
+        return ListView.builder(
+          padding: EdgeInsets.symmetric(vertical: width * 0.02),
+          itemCount: filteredMessages.length,
+          itemBuilder: (context, index) {
+            final item = filteredMessages[index];
+            return Column(
+              children: [
+                item,
+                if (item is ChatMessage)
+                  Divider(thickness: 1.0, color: Colors.grey.shade200),
+              ],
+            );
+          },
+        );
+      }),
     );
   }
 
-  Widget _buildMessageInput(BuildContext context, TeamController controller, TextEditingController textController) {
-    final width = MediaQuery.of(context).size.width;
+  Widget _buildMessageInput(BuildContext context, TeamController teamsController, TextEditingController textController, double width) {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: width * 0.02, vertical: width * 0.02),
       decoration: BoxDecoration(
@@ -254,7 +205,7 @@ class TeamChatPage extends StatelessWidget {
           IconButton(
             icon: Icon(Icons.attach_file, color: Colors.black, size: width * 0.06),
             onPressed: () {
-              controller.showAttachBottomSheet(context);
+              teamsController.showAttachBottomSheet(context);
             },
           ),
           Expanded(
@@ -287,12 +238,51 @@ class TeamChatPage extends StatelessWidget {
             child: IconButton(
               icon: Icon(Icons.send, color: Colors.white, size: width * 0.05),
               onPressed: () {
-                // Add message sending logic here
-                textController.clear();
+                // Corrected code: Check for null and use the value
+                if (teamsController.imagePath.value != null) {
+                  teamsController.sendImagePreview(teamsController.imagePath.value!, teamData['name']!);
+                } else {
+                  // Handle the case where imagePath is null, e.g., send a text message
+                  // teamsController.sendMessage(textController.text, teamData['name']!);
+                  Get.snackbar("Error", "Please select an image or video to send.");
+                }
               },
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _DateHeader extends StatelessWidget {
+  final String date;
+  const _DateHeader({required this.date});
+
+  @override
+  Widget build(BuildContext context) {
+    final width = MediaQuery.of(context).size.width;
+    final fontSize = width * 0.035;
+
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: width * 0.03),
+      child: Center(
+        child: Container(
+          padding: EdgeInsets.symmetric(
+              horizontal: width * 0.04, vertical: width * 0.015),
+          decoration: BoxDecoration(
+            color: Colors.grey.shade300,
+            borderRadius: BorderRadius.circular(width * 0.05),
+          ),
+          child: Text(
+            date,
+            style: TextStyle(
+              fontFamily: AppFonts.interRegular,
+              fontSize: fontSize,
+              color: Colors.grey.shade800,
+            ),
+          ),
+        ),
       ),
     );
   }

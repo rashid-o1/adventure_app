@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:adventure_app/core/utils/style/app_fonts.dart';
+import 'package:intl/intl.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../view/attach_image_edit_page.dart';
+import '../view/pdf_preview_page.dart';
 import '../view/contact_message_page.dart';
 
 class TeamController extends GetxController {
@@ -12,7 +14,6 @@ class TeamController extends GetxController {
   final RxMap<String, bool> isMuted = <String, bool>{}.obs;
   final RxList<Map<String, String>> members = <Map<String, String>>[].obs;
   final Rx<Map<String, dynamic>?> selectedMessage = Rx<Map<String, dynamic>?>(null);
-  // Map of known senders to their emails for the example
   final Map<String, String> senderEmails = {
     'Zohaib': 'zohaib.01@email.com',
     'Paul': 'paul.02@email.com',
@@ -26,7 +27,6 @@ class TeamController extends GetxController {
     'Hassan': 'hassan.10@email.com',
     'Huma Noor': 'huma.11@email.com',
   };
-
 
   final RxList<Map<String, String>> teams = <Map<String, String>>[
     {
@@ -256,17 +256,32 @@ class TeamController extends GetxController {
     ],
   };
 
+  final Rx<String?> imagePath = Rx<String?>(null);
+
+  String formatDate(DateTime date) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final yesterday = DateTime(now.year, now.month, now.day - 1);
+    final aDate = DateTime(date.year, date.month, date.day);
+
+    if (aDate == today) {
+      return "Today";
+    } else if (aDate == yesterday) {
+      return "Yesterday";
+    } else {
+      return DateFormat('MMMM d, y').format(date);
+    }
+  }
+
   void processMembers(String teamName) {
     members.clear();
-
     final chatData = chatMessages[teamName] ?? [];
     final Set<String> addedNames = {};
     final List<Map<String, String>> teamMembers = [];
 
     final creator = teams.firstWhere(
             (team) => team['name'] == teamName,
-        orElse: () => {'description': ''}
-    )['description']?.split(" ").first;
+        orElse: () => {'description': ''})['description']?.split(" ").first;
 
     if (creator != null && creator.isNotEmpty) {
       final creatorAvatar = chatData.firstWhere(
@@ -296,7 +311,6 @@ class TeamController extends GetxController {
     members.value = teamMembers;
   }
 
-  // New method to show the email options bottom sheet
   void showEmailOptionsBottomSheet() {
     Get.bottomSheet(
       SafeArea(
@@ -325,7 +339,6 @@ class TeamController extends GetxController {
     );
   }
 
-  // New method to show the attachments bottom sheet
   void showAttachBottomSheet(BuildContext context) {
     Get.bottomSheet(
       SafeArea(
@@ -353,17 +366,16 @@ class TeamController extends GetxController {
               ),
               _buildOptionTile("Attach files", () {
                 Get.back();
-              }, icon: Icons.attach_file),
-              _buildOptionTile("Attached photo or videos", () {
+                _pickFiles();
+              }, icon: Icons.insert_drive_file),
+              _buildOptionTile("Attach photo or videos", () {
                 Get.back();
-                _pickAndEditImage();
+                _pickMedia(ImageSource.gallery);
               }, icon: Icons.image_outlined),
               _buildOptionTile("Take a photo", () {
                 Get.back();
+                _pickMedia(ImageSource.camera);
               }, icon: Icons.photo_camera_outlined),
-              _buildOptionTile("Share GIF", () {
-                Get.back();
-              }, icon: Icons.gif_box_outlined),
             ],
           ),
         ),
@@ -371,39 +383,97 @@ class TeamController extends GetxController {
     );
   }
 
-  // New function to handle picking and editing the image
-  Future<void> _pickAndEditImage() async {
-    // This is a common error with the image_picker package on Android.
-    // It usually means the AndroidManifest.xml file is missing the required permissions.
-    // Please check your `android/app/src/main/AndroidManifest.xml` file and
-    // ensure you have the following permissions:
-    // <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
-    // <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
-    // <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
-    // You may also need to update the `pigeon` dependencies if you're using a newer Flutter version.
+
+
+  Future<void> _pickMedia(ImageSource source) async {
     try {
       final ImagePicker picker = ImagePicker();
-      final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+      final XFile? media;
 
-      if (image != null) {
-        Get.to(() => AttachImageEditorPage(imageUrl: image.path));
+      if (source == ImageSource.camera) {
+        media = await picker.pickImage(source: source);
+      } else {
+        media = await picker.pickMedia();
+      }
+
+      if (media?.path != null) {
+        // Check if it's an image file before proceeding
+        if (media!.path.endsWith('.mp4') || media.path.endsWith('.mov')) {
+          final result = await Get.to<String>(() => AttachImageEditorPage(filePath: media!.path));
+          // You can handle the video path here if needed
+        } else {
+          // Handle the potential for invalid image data
+          try {
+            final editedImagePath = await Get.to<String>(
+                  () => AttachImageEditorPage(filePath: media!.path),
+            );
+
+            if (editedImagePath != null) {
+              imagePath.value = editedImagePath;
+            } else {
+              imagePath.value = media.path;
+            }
+            sendImagePreview(imagePath.value!, "Team 01");
+          } catch (e) {
+            // Catch the specific error from the image editor
+            Get.snackbar("Error", "Could not load image. Please try a different one.");
+            print("Error in image editor: $e");
+          }
+        }
       }
     } catch (e) {
       Get.snackbar(
         "Error",
-        "Could not open the gallery. Please check your app's permissions.",
+        "Could not access media. Please check your app's permissions.",
         snackPosition: SnackPosition.BOTTOM,
       );
-      print("Error picking image: $e");
+      print("Error picking media: $e");
     }
   }
 
-  //  dialog and logic for member options
+  Future<void> _pickFiles() async {
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['pdf', 'doc', 'docx', 'xlsx', 'pptx'],
+      );
+
+      if (result != null) {
+        final platformFile = result.files.first;
+        if (platformFile.extension?.toLowerCase() == 'pdf') {
+          Get.to(() => PdfPreviewPage(path: platformFile.path!));
+        } else {
+          Get.snackbar("File Sent", "${platformFile.name} sent successfully.");
+        }
+      }
+    } catch (e) {
+      Get.snackbar(
+        "Error",
+        "Could not pick the file. Please check your app's permissions.",
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      print("Error picking file: $e");
+    }
+  }
+
+  void sendImagePreview(String imagePath, String teamName) {
+    if (imagePath.isNotEmpty) {
+      chatMessages[teamName]?.add({
+        'sender': 'Hassan', // Use a real sender or a placeholder
+        'contentType': 'photo',
+        'message': imagePath,
+        'timestamp': DateTime.now(),
+        'avatar': 'https://randomuser.me/api/portraits/men/4.jpg',
+      });
+      update();
+    }
+  }
+
   void showMemberOptionsDialog(Map<String, String> member) {
     Get.dialog(
       AlertDialog(
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10), // 🔹 slightly low circular
+          borderRadius: BorderRadius.circular(10),
         ),
         contentPadding: EdgeInsets.zero,
         content: Column(
@@ -411,7 +481,6 @@ class TeamController extends GetxController {
           children: [
             _buildOptionTile("Message ${member['name']}", () {
               Get.back();
-              // Get the email and pass it along with the rest of the member data
               final memberEmail = senderEmails[member['name']];
               final Map<String, String> contactDataWithEmail = Map.from(member);
               if (memberEmail != null) {
@@ -449,13 +518,12 @@ class TeamController extends GetxController {
       leading: icon != null ? Icon(icon, color: Colors.black54,) : null,
       title: Text(
         title,
-        style: const TextStyle(fontSize: 14), // 🔹 compact font
+        style: const TextStyle(fontSize: 14),
       ),
       onTap: onTap,
     );
   }
 
-  // function to update a member's role.
   void updateMemberRole(String memberName, String newRole) {
     final index = members.indexWhere((member) => member['name'] == memberName);
     if (index != -1) {
@@ -466,9 +534,7 @@ class TeamController extends GetxController {
     }
   }
 
-  // New methods for handling chat message options
   void showChatOptions(BuildContext context, Map<String, dynamic> message) {
-    // You can customize the bottom sheet UI here.
     Get.bottomSheet(
       SafeArea(
         child: Container(
@@ -478,28 +544,22 @@ class TeamController extends GetxController {
             mainAxisSize: MainAxisSize.min,
             children: [
               _buildOptionTile("Quote message", () {
-
                 Get.back();
               }, icon: Icons.format_quote),
               _buildOptionTile("Forward message", () {
-
                 Get.back();
               }, icon: Icons.shortcut),
               _buildOptionTile("Edit message", () {
-
                 Get.back();
               }, icon: Icons.edit),
               _buildOptionTile("Copy", () {
-                // Call the copy logic in the controller
                 _copyMessage(message['message'] ?? '');
                 Get.back();
               }, icon: Icons.copy),
               _buildOptionTile("Pin", () {
-
                 Get.back();
               }, icon: Icons.push_pin_outlined),
               _buildOptionTile("Delete message", () {
-                // Call the delete logic in the controller
                 _deleteMessage(message);
                 Get.back();
               }, icon: Icons.delete_outline),
@@ -511,12 +571,10 @@ class TeamController extends GetxController {
         borderRadius: BorderRadius.circular(20),
       ),
     ).whenComplete(() {
-      // Clear the selection when the bottom sheet is dismissed.
       clearSelection();
     });
   }
 
-  // New methods for managing message selection
   void selectMessage(Map<String, dynamic> message) {
     selectedMessage.value = message;
   }
@@ -525,14 +583,11 @@ class TeamController extends GetxController {
     selectedMessage.value = null;
   }
 
-  // New private methods to handle the actions
   void _copyMessage(String text) {
-
     Get.snackbar("Copied!", "Message copied to clipboard.");
   }
 
   void _deleteMessage(Map<String, dynamic> message) {
-
     Get.snackbar("Deleted!", "Message has been deleted.");
   }
 }

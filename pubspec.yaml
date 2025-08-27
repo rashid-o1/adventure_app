@@ -39,6 +39,12 @@ dependencies:
   geolocator: any
   flutter_spinkit : any
   image_picker: ^1.2.0
+  file_picker: ^10.3.2
+  flutter_pdfview: ^1.4.1+1
+  video_player: ^2.10.0
+  image_painter: ^0.7.1
+  path_provider: ^2.1.5
+  shared_preferences: ^2.5.3
 
 dev_dependencies:
   flutter_test:
