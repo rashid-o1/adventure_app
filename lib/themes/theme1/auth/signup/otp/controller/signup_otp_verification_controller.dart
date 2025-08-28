@@ -1,32 +1,75 @@
 import 'package:adventure_app/core/utils/constant/app_labels.dart';
-import 'package:adventure_app/themes/theme1/auth/signup/verification/view/signup_verification.dart';
+import 'package:adventure_app/core/utils/style/app_fonts.dart';
+import 'package:adventure_app/themes/theme1/auth/forgot/view/create_new_password_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:adventure_app/core/utils/style/app_fonts.dart';
+import 'dart:async';
 
-import '../../signup/otp/view/signup_otp_verification.dart';
+class SignupOTPVerificationController extends GetxController {
+  RxList<TextEditingController> controllers = RxList.generate(4, (_) => TextEditingController());
+  RxList<FocusNode> focusNodes = RxList.generate(4, (_) => FocusNode());
 
-class ForgotPasswordController extends GetxController {
+  RxString otp = ''.obs;
+  RxInt resendTimer = 0.obs;
+  late Timer timer;
 
-  final TextEditingController emailController = TextEditingController();
-  final TextEditingController passwordController = TextEditingController();
-  final TextEditingController repeatPasswordController = TextEditingController();
+  RxBool isOtpCorrect = true.obs;
+  RxString messageText = ''.obs;
+  RxBool showMessage = false.obs;
+  Timer? messageTimer;
 
-  RxBool isEmailValid = true.obs;
-  RxBool isLoading = false.obs;
-  RxBool showPassword = false.obs;
-  RxBool showRepeatPassword = false.obs;
-  RxBool rememberMe = false.obs;
+  // property to determine the flow type
+  final bool isForgotPasswordFlow;
+
+  SignupOTPVerificationController({this.isForgotPasswordFlow = false});
+
+  @override
+  void onInit() {
+    super.onInit();
+    startTimer();
+  }
 
   @override
   void onClose() {
-    emailController.dispose();
-    passwordController.dispose();
-    repeatPasswordController.dispose();
+    if (timer.isActive) {
+      timer.cancel();
+    }
+    if (messageTimer != null && messageTimer!.isActive) {
+      messageTimer!.cancel();
+    }
+    for (var controller in controllers) {
+      controller.dispose();
+    }
+    for (var node in focusNodes) {
+      node.dispose();
+    }
     super.onClose();
   }
 
+  void startTimer() {
+    resendTimer.value = 60;
+    timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (resendTimer.value > 0) {
+        resendTimer.value = resendTimer.value - 1;
+      } else {
+        timer.cancel();
+      }
+    });
+
+    messageText.value = isForgotPasswordFlow
+        ? "Password reset code sent successfully."
+        : "Verification code sent successfully.";
+    showMessage.value = true;
+    if (messageTimer != null && messageTimer!.isActive) {
+      messageTimer!.cancel();
+    }
+    messageTimer = Timer(const Duration(seconds: 5), () {
+      showMessage.value = false;
+    });
+  }
+
   void showSuccessDialog() {
+    RxBool isLoading = false.obs;
     Get.dialog(
       WillPopScope(
         onWillPop: () async => false,
@@ -36,7 +79,6 @@ class ForgotPasswordController extends GetxController {
             padding: const EdgeInsets.all(20.0),
             child: Column(
               mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Container(
                   width: 80,
@@ -49,8 +91,7 @@ class ForgotPasswordController extends GetxController {
                 ),
                 const SizedBox(height: 20),
                 const Text(
-                  "Reset Password Successful!",
-                  textAlign: TextAlign.center,
+                  "Verification Successful!",
                   style: TextStyle(
                     fontFamily: AppFonts.interBold,
                     fontSize: 20,
@@ -59,7 +100,7 @@ class ForgotPasswordController extends GetxController {
                 ),
                 const SizedBox(height: 10),
                 const Text(
-                  "Your password has been successfully changed.",
+                  AppLabels.verifiedsuccessful,
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontFamily: AppFonts.interRegular,
@@ -76,15 +117,14 @@ class ForgotPasswordController extends GetxController {
                       try {
                         await Future.delayed(const Duration(seconds: 1));
                         Get.back();
-                        Get.offAllNamed('/');
+                        Get.offNamed('/language');
                       } finally {
                         isLoading.value = false;
                       }
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.black,
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(25)),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
                       padding: const EdgeInsets.symmetric(vertical: 15),
                     ),
                     child: isLoading.value
@@ -97,7 +137,7 @@ class ForgotPasswordController extends GetxController {
                       ),
                     )
                         : const Text(
-                      "Go back to home",
+                      "Continue",
                       style: TextStyle(color: Colors.white, fontSize: 16),
                     ),
                   ),
@@ -111,39 +151,36 @@ class ForgotPasswordController extends GetxController {
     );
   }
 
-  // Validates email , handles the "Continue" button logic
-  void continueProcess() {
-    final email = emailController.text.trim();
-    if (email.isEmpty || !GetUtils.isEmail(email)) {
-      isEmailValid.value = false;
-      Get.snackbar(
-        "Error",
-        "Please enter a valid email address.",
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-        snackPosition: SnackPosition.TOP,
-      );
+  void confirm() {
+    if (otp.value.length == 4) {
+      if (otp.value == '1234') {
+        isOtpCorrect.value = true;
+        showMessage.value = false;
+        if (isForgotPasswordFlow) {
+          Get.off(CreateNewPasswordScreen());
+        } else {
+          showSuccessDialog();
+        }
+      } else {
+        isOtpCorrect.value = false;
+        messageText.value = "Invalid Code";
+        showMessage.value = true;
+      }
     } else {
-      isEmailValid.value = true;
-      print("Sending OTP to: $email");
-      Get.snackbar(
-        "Success",
-        "OTP has been sent to your email.",
-        backgroundColor: Colors.green,
-        colorText: Colors.white,
-        snackPosition: SnackPosition.TOP,
-      );
-
-      // Clear the email field before navigating
-      emailController.clear();
-
-      Get.to(SignupOTPVerificationScreen(title: AppLabels.mailed, isForgotPasswordFlow: true,));
+      isOtpCorrect.value = false;
+      messageText.value = "Please enter the 4-digit code.";
+      showMessage.value = true;
     }
   }
 
-
-  //continuw password
-  void onContinuePassword() {
-    showSuccessDialog();
+  void resendCode() {
+    if (resendTimer.value == 0) {
+      startTimer();
+      for (var c in controllers) {
+        c.clear();
+      }
+      otp.value = '';
+      isOtpCorrect.value = true;
+    }
   }
 }

@@ -17,165 +17,110 @@ class SignupVerificationScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // argument
     final SignupVerificationController controller = Get.put(
       SignupVerificationController(isForgotPasswordFlow: isForgotPasswordFlow),
     );
+    final mq = MediaQuery.of(context).size;
 
-    return Scaffold(
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.only(left: 20.0, right: 20, bottom: 20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.arrow_back),
-                  onPressed: () {
-                    for (var c in controller.controllers) {
-                      c.clear();
-                    }
-                    Navigator.pop(context);
-                  },
-                ),
-                const SizedBox(height: 15),
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontFamily: AppFonts.interBold,
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 10),
-                Text(
-                  AppLabels.verificationPrompt,
-                  style: const TextStyle(
-                    fontFamily: AppFonts.interRegular,
-                    fontSize: 16,
-                    color: Colors.black87,
-                  ),
-                ),
-                const SizedBox(height: 30),
-                // OTP input fields...
-                Obx(() => Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: List.generate(4, (index) {
-                    return Container(
-                      width: 60,
-                      height: 60,
-                      decoration: BoxDecoration(
-                        color: Colors.grey[200],
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(
-                          color: controller.isOtpCorrect.value ? Colors.transparent : Colors.red,
-                          width: 2.0,
-                        ),
-                      ),
-                      child: Center(
-                        child: TextField(
-                          controller: controller.controllers[index],
-                          focusNode: controller.focusNodes[index],
-                          onChanged: (value) {
-                            if (value.length == 1) {
-                              if (index < 3) {
-                                controller.focusNodes[index + 1].requestFocus();
-                              } else {
-                                controller.focusNodes[index].unfocus();
-                              }
-                            }
-                            String currentOtp = "";
-                            for (var c in controller.controllers) {
-                              currentOtp += c.text;
-                            }
-                            controller.otp.value = currentOtp;
-                            controller.isOtpCorrect.value = true;
-                          },
-                          textAlign: TextAlign.center,
-                          keyboardType: TextInputType.number,
-                          maxLength: 1,
-                          style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                          decoration: const InputDecoration(
-                            border: InputBorder.none,
-                            counterText: '',
-                          ),
-                        ),
-                      ),
-                    );
-                  }),
-                )),
-                const SizedBox(height: 5),
-                Obx(() => controller.showMessage.value
-                    ? Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                  child: Text(
-                    controller.messageText.value,
+    return WillPopScope(
+      onWillPop: () async => controller.status.value != 'pending', // Disable back button when pending
+      child: Scaffold(
+        backgroundColor: Colors.white,
+        appBar: AppBar(
+          backgroundColor: Colors.black,
+          automaticallyImplyLeading: false, // Remove default back button
+          actions: [
+            if (controller.status.value != 'pending')
+              IconButton(
+                icon: const Icon(Icons.close, color: Colors.white),
+                onPressed: () {
+                  if (controller.status.value == 'rejected') {
+                    Get.offAllNamed('/selection');
+                  } else if (controller.status.value == 'approved') {
+                    Get.offAllNamed('/login');
+                  }
+                },
+              ),
+          ],
+        ),
+        body: SafeArea(
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 40.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    title,
                     style: TextStyle(
-                      color: controller.isOtpCorrect.value ? Colors.green : Colors.red,
+                      fontFamily: AppFonts.interBold,
+                      fontSize: mq.width * 0.06,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
                     ),
+                    textAlign: TextAlign.center,
                   ),
-                )
-                    : const SizedBox.shrink()),
-                const SizedBox(height: 20),
-                Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                  const SizedBox(height: 20),
+                  Obx(() => Column(
                     children: [
-                      const Text(
-                        "Didn't receive the code?",
+                      Icon(
+                        controller.status.value == 'pending'
+                            ? Icons.hourglass_empty
+                            : controller.status.value == 'approved'
+                            ? Icons.check_circle
+                            : Icons.cancel,
+                        color: controller.status.value == 'pending'
+                            ? Colors.grey
+                            : controller.status.value == 'approved'
+                            ? Colors.green
+                            : Colors.red,
+                        size: mq.width * 0.15,
+                      ),
+                      const SizedBox(height: 20),
+                      Text(
+                        controller.status.value == 'pending'
+                            ? 'Your request is submitted.\nPlease wait up to 30 minutes.'
+                            : controller.status.value == 'approved'
+                            ? 'Registration Approved by ${controller.selectedRole.value == 'TeamLeader' ? 'Admin' : 'Team Leader'}'
+                            : 'Registration Rejected',
+                        textAlign: TextAlign.center,
                         style: TextStyle(
                           fontFamily: AppFonts.interRegular,
-                          fontSize: 14,
+                          fontSize: mq.width * 0.045,
                           color: Colors.black87,
                         ),
                       ),
-                      const SizedBox(width: 5),
-                      Obx(() {
-                        if (controller.resendTimer.value > 0) {
-                          return Text(
-                            "You can resend code in ${controller.resendTimer.value} s",
-                            style: const TextStyle(
-                              fontFamily: AppFonts.interRegular,
-                              fontSize: 14,
-                              color: Colors.black87,
-                            ),
-                          );
-                        } else {
-                          return TextButton(
-                            onPressed: controller.resendCode,
-                            child: const Text(
-                              "Resend",
-                              style: TextStyle(
-                                fontFamily: AppFonts.interBold,
-                                color: AppColors.black,
-                              ),
-                            ),
-                          );
-                        }
-                      }),
                     ],
-                  ),
-                ),
-                const SizedBox(height: 20),
-                ElevatedButton(
-                  onPressed: controller.confirm,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.black,
-                    minimumSize: const Size(double.infinity, 55),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
-                  ),
-                  child: const Text(
-                    "Confirm",
-                    style: TextStyle(
-                      fontFamily: AppFonts.interBold,
-                      color: Colors.white,
-                      fontSize: 16,
+                  )),
+                  const SizedBox(height: 40),
+                  Obx(() => controller.status.value == 'pending'
+                      ? const SizedBox.shrink()
+                      : ElevatedButton(
+                    onPressed: () {
+                      if (controller.status.value == 'approved') {
+                        Get.offAllNamed('/login');
+                      } else if (controller.status.value == 'rejected') {
+                        Get.offAllNamed('/selection');
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: controller.status.value == 'approved' ? Colors.green : AppColors.black,
+                      minimumSize: Size(mq.width * 0.6, 55),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(25),
+                      ),
                     ),
-                  ),
-                ),
-                const SizedBox(height: 10),
-              ],
+                    child: Text(
+                      controller.status.value == 'approved' ? 'Proceed' : 'Go Back',
+                      style: TextStyle(
+                        fontFamily: AppFonts.interBold,
+                        color: Colors.white,
+                        fontSize: mq.width * 0.045,
+                      ),
+                    ),
+                  )),
+                ],
+              ),
             ),
           ),
         ),

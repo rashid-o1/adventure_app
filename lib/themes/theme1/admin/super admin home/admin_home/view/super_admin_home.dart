@@ -3,20 +3,22 @@ import 'package:adventure_app/themes/theme1/admin/create%20team/view/create_team
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../../../../core/utils/style/app_fonts.dart';
-import '../../../create tasks/view/create_task_page.dart';
+import '../../../../auth/request_status/view/registration_requests_page.dart';
+import '../../../create%20tasks/view/create_task_page.dart';
 import '../../Tabs/task/view/tasks_page.dart';
 import '../../Tabs/team/view/teams_page.dart';
 import '../controller/super_admin_home_controller.dart';
 import '../../Tabs/equipment/view/equipment_page.dart';
 import '../../Tabs/event/view/events_page.dart';
+import '../../../../../../services/auth_service.dart';
 
 class SuperAdminHome extends StatelessWidget {
   const SuperAdminHome({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final SuperAdminHomeController controller =
-    Get.put(SuperAdminHomeController());
+    final SuperAdminHomeController controller = Get.put(SuperAdminHomeController());
+    final AuthService authService = AuthService();
 
     final size = MediaQuery.of(context).size;
     final height = size.height;
@@ -42,6 +44,42 @@ class SuperAdminHome extends StatelessWidget {
             color: Colors.white,
           ),
         ),
+        actions: [
+          PopupMenuButton<String>(
+            icon: Icon(Icons.more_vert, color: Colors.white),
+            onSelected: (value) async {
+              if (value == 'logout') {
+                await authService.signOut();
+              } else if (value == 'register_requests') {
+                Get.to(() => const RegistrationRequestsPage());
+              }
+            },
+            itemBuilder: (BuildContext context) => [
+              PopupMenuItem<String>(
+                value: 'logout',
+                child: Text(
+                  'Logout',
+                  style: TextStyle(
+                    fontFamily: AppFonts.interRegular,
+                    fontSize: width * 0.04,
+                    color: Colors.black,
+                  ),
+                ),
+              ),
+              PopupMenuItem<String>(
+                value: 'register_requests',
+                child: Text(
+                  'Register Requests',
+                  style: TextStyle(
+                    fontFamily: AppFonts.interRegular,
+                    fontSize: width * 0.04,
+                    color: Colors.black,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
       body: SafeArea(
         top: false, // ✅ exclude AppBar area from SafeArea
@@ -51,8 +89,7 @@ class SuperAdminHome extends StatelessWidget {
               children: [
                 // Tabs Row
                 Padding(
-                  padding: EdgeInsets.symmetric(
-                      horizontal: width * 0.05, vertical: height * 0.012),
+                  padding: EdgeInsets.symmetric(horizontal: width * 0.05, vertical: height * 0.012),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
@@ -67,9 +104,7 @@ class SuperAdminHome extends StatelessWidget {
                 // Pages content
                 Expanded(
                   child: Obx(() {
-                    if (controller.hasContent[
-                    controller.selectedTabIndex.value] ==
-                        false) {
+                    if (controller.hasContent[controller.selectedTabIndex.value] == false) {
                       return const EventsPage();
                     } else {
                       return pages[controller.selectedTabIndex.value];
@@ -78,12 +113,9 @@ class SuperAdminHome extends StatelessWidget {
                 ),
 
                 // Bottom Placeholder for Events Tab
-                Obx(() => controller.selectedTabIndex.value == 0 &&
-                    !controller.hasContent[0]
+                Obx(() => controller.selectedTabIndex.value == 0 && !controller.hasContent[0]
                     ? Padding(
-                  padding: EdgeInsets.symmetric(
-                      horizontal: width * 0.05,
-                      vertical: height * 0.025),
+                  padding: EdgeInsets.symmetric(horizontal: width * 0.05, vertical: height * 0.025),
                   child: Column(
                     children: [
                       Text(
@@ -101,8 +133,7 @@ class SuperAdminHome extends StatelessWidget {
                           onPressed: controller.inviteAdmins,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.white54,
-                            padding: EdgeInsets.symmetric(
-                                vertical: height * 0.022),
+                            padding: EdgeInsets.symmetric(vertical: height * 0.022),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(25),
                               side: const BorderSide(color: Colors.black),
@@ -137,9 +168,7 @@ class SuperAdminHome extends StatelessWidget {
 
             // FAB Menu Items
             Obx(() {
-              final double bottomPosition =
-              controller.selectedTabIndex.value == 0 &&
-                  !controller.hasContent[0]
+              final double bottomPosition = controller.selectedTabIndex.value == 0 && !controller.hasContent[0]
                   ? height * 0.22
                   : height * 0.13;
               return Positioned(
@@ -149,26 +178,13 @@ class SuperAdminHome extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     if (controller.isFabExpanded.value) ...[
-                      _buildFabMenuItem(
-                          "Create Event",
-                          Icons.group,
-                              () => Get.to(() => const CreateEventPage()),
-                          width),
+                      _buildFabMenuItem("Create Event", Icons.group, () => Get.to(() => const CreateEventPage()), width),
                       SizedBox(height: height * 0.012),
-                      _buildFabMenuItem(
-                          "Create Task",
-                          Icons.assignment,
-                              () => Get.to(() => const CreateTaskPage()),
-                          width),
+                      _buildFabMenuItem("Create Task", Icons.assignment, () => Get.to(() => const CreateTaskPage()), width),
                       SizedBox(height: height * 0.012),
-                      _buildFabMenuItem(
-                          "Team Invite",
-                          Icons.person_add,
-                              () => Get.to(() => const CreateTeamPage()),
-                          width),
+                      _buildFabMenuItem("Team Invite", Icons.person_add, () => Get.to(() => const CreateTeamPage()), width),
                       SizedBox(height: height * 0.012),
-                      _buildFabMenuItem("New message", Icons.chat_bubble_outline,
-                              () {}, width),
+                      _buildFabMenuItem("New message", Icons.chat_bubble_outline, () {}, width),
                     ],
                   ],
                 ),
@@ -177,9 +193,7 @@ class SuperAdminHome extends StatelessWidget {
 
             // Main FAB Button
             Obx(() {
-              final double bottomPosition =
-              controller.selectedTabIndex.value == 0 &&
-                  !controller.hasContent[0]
+              final double bottomPosition = controller.selectedTabIndex.value == 0 && !controller.hasContent[0]
                   ? height * 0.13
                   : height * 0.05;
               return Positioned(
@@ -208,8 +222,7 @@ class SuperAdminHome extends StatelessWidget {
   }
 
   // 🔹 Build Tab
-  Widget _buildTab(BuildContext context, SuperAdminHomeController controller,
-      String title, int index, double width) {
+  Widget _buildTab(BuildContext context, SuperAdminHomeController controller, String title, int index, double width) {
     return Obx(() {
       final isSelected = controller.selectedTabIndex.value == index;
       return GestureDetector(
@@ -228,8 +241,7 @@ class SuperAdminHome extends StatelessWidget {
           child: AnimatedDefaultTextStyle(
             duration: const Duration(milliseconds: 200),
             style: TextStyle(
-              fontFamily:
-              isSelected ? AppFonts.interBold : AppFonts.interRegular,
+              fontFamily: isSelected ? AppFonts.interBold : AppFonts.interRegular,
               fontSize: isSelected ? width * 0.048 : width * 0.045,
               fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
               color: isSelected ? Colors.black : Colors.grey[600],
@@ -242,15 +254,13 @@ class SuperAdminHome extends StatelessWidget {
   }
 
   // 🔹 Build FAB Menu
-  Widget _buildFabMenuItem(
-      String label, IconData icon, VoidCallback onTap, double width) {
+  Widget _buildFabMenuItem(String label, IconData icon, VoidCallback onTap, double width) {
     return GestureDetector(
       onTap: onTap,
       child: Row(
         children: [
           Container(
-            padding: EdgeInsets.symmetric(
-                horizontal: width * 0.025, vertical: width * 0.012),
+            padding: EdgeInsets.symmetric(horizontal: width * 0.025, vertical: width * 0.012),
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(7),

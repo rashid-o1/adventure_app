@@ -1,6 +1,8 @@
 class AppLabels {
   static const String helloThere = 'Hello there';
   static const String adminselectionbtntext = '4x4 Adventures Admin';
+  static const String adminId = 'Admin Id';
+  static const String leaderId = 'Leader Id';
   static const String teamleadbtntext = 'Team Lead';
   static const String teammemberbtntext = 'Team Member';
   static const String newevent = 'Create a new Event';
