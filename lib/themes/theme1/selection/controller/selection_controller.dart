@@ -11,11 +11,9 @@ class SelectionController extends GetxController {
 
     loadingStates[index].value = true;
 
-    // Normalize role to lowercase 'admin'
     String normalizedRole = role.toLowerCase() == 'admin' ? 'admin' : role;
     print('Selected role: $normalizedRole');
 
-    // Store the selected role
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('selectedRole', normalizedRole);
     print('Stored role in SharedPreferences: $normalizedRole');

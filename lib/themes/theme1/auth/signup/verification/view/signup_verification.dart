@@ -1,128 +1,242 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../../../../../core/utils/constant/app_labels.dart';
-import '../../../../../../core/utils/style/app_colors.dart';
 import '../../../../../../core/utils/style/app_fonts.dart';
+import '../../../../../../core/utils/style/app_colors.dart';
 import '../controller/signup_verification_controller.dart';
 
 class SignupVerificationScreen extends StatelessWidget {
   final String title;
-  final bool isForgotPasswordFlow;
 
-  const SignupVerificationScreen({
-    super.key,
-    required this.title,
-    this.isForgotPasswordFlow = false,
-  });
+  const SignupVerificationScreen({super.key, required this.title});
 
   @override
   Widget build(BuildContext context) {
-    final SignupVerificationController controller = Get.put(
-      SignupVerificationController(isForgotPasswordFlow: isForgotPasswordFlow),
-    );
-    final mq = MediaQuery.of(context).size;
+    final double width = MediaQuery.of(context).size.width;
+    final double height = MediaQuery.of(context).size.height;
 
-    return WillPopScope(
-      onWillPop: () async => controller.status.value != 'pending', // Disable back button when pending
-      child: Scaffold(
+    // Check if controller exists, fallback if not
+    SignupVerificationController? controller;
+    try {
+      controller = Get.find<SignupVerificationController>(tag: 'signup_verification');
+      print('SignupVerificationController found with tag: signup_verification');
+    } catch (e) {
+      print('Error finding SignupVerificationController: $e');
+      return Scaffold(
         backgroundColor: Colors.white,
-        appBar: AppBar(
-          backgroundColor: Colors.black,
-          automaticallyImplyLeading: false, // Remove default back button
-          actions: [
-            if (controller.status.value != 'pending')
-              IconButton(
-                icon: const Icon(Icons.close, color: Colors.white),
-                onPressed: () {
-                  if (controller.status.value == 'rejected') {
-                    Get.offAllNamed('/selection');
-                  } else if (controller.status.value == 'approved') {
-                    Get.offAllNamed('/login');
-                  }
-                },
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.error,
+                size: width * 0.15,
+                color: Colors.red,
               ),
-          ],
+              SizedBox(height: height * 0.02),
+              Text(
+                'Error loading verification. Please try again.',
+                style: TextStyle(
+                  fontFamily: AppFonts.interBold,
+                  fontSize: width * 0.045,
+                  color: Colors.black,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: height * 0.02),
+              ElevatedButton(
+                onPressed: () {
+                  Get.offAllNamed('/selection');
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.black,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  padding: EdgeInsets.symmetric(horizontal: width * 0.1, vertical: height * 0.015),
+                ),
+                child: Text(
+                  'Go Back',
+                  style: TextStyle(
+                    fontFamily: AppFonts.interBold,
+                    fontSize: width * 0.04,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
-        body: SafeArea(
-          child: Center(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 40.0),
-              child: Column(
+      );
+    }
+
+    return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        backgroundColor: Colors.black,
+        centerTitle: true,
+        automaticallyImplyLeading: false,
+        title: Text(
+          title,
+          style: TextStyle(
+            fontFamily: AppFonts.interBold,
+            fontSize: width * 0.055,
+            color: Colors.white,
+          ),
+        ),
+      ),
+      body: SafeArea(
+        top: false,
+        child: Center(
+          child: Obx(() {
+            if (controller!.status.value == 'pending') {
+              return Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
+                  Icon(
+                    Icons.hourglass_empty,
+                    size: width * 0.15,
+                    color: Colors.grey,
+                  ),
+                  SizedBox(height: height * 0.02),
                   Text(
-                    title,
+                    'Your request is submitted. Please wait up to 30 minutes.',
                     style: TextStyle(
-                      fontFamily: AppFonts.interBold,
-                      fontSize: mq.width * 0.06,
-                      fontWeight: FontWeight.bold,
+                      fontFamily: AppFonts.interRegular,
+                      fontSize: width * 0.04,
                       color: Colors.black,
                     ),
                     textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: 20),
-                  Obx(() => Column(
-                    children: [
-                      Icon(
-                        controller.status.value == 'pending'
-                            ? Icons.hourglass_empty
-                            : controller.status.value == 'approved'
-                            ? Icons.check_circle
-                            : Icons.cancel,
-                        color: controller.status.value == 'pending'
-                            ? Colors.grey
-                            : controller.status.value == 'approved'
-                            ? Colors.green
-                            : Colors.red,
-                        size: mq.width * 0.15,
-                      ),
-                      const SizedBox(height: 20),
-                      Text(
-                        controller.status.value == 'pending'
-                            ? 'Your request is submitted.\nPlease wait up to 30 minutes.'
-                            : controller.status.value == 'approved'
-                            ? 'Registration Approved by ${controller.selectedRole.value == 'TeamLeader' ? 'Admin' : 'Team Leader'}'
-                            : 'Registration Rejected',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontFamily: AppFonts.interRegular,
-                          fontSize: mq.width * 0.045,
-                          color: Colors.black87,
-                        ),
-                      ),
-                    ],
-                  )),
-                  const SizedBox(height: 40),
-                  Obx(() => controller.status.value == 'pending'
-                      ? const SizedBox.shrink()
-                      : ElevatedButton(
+                ],
+              );
+            } else if (controller.status.value == 'approved') {
+              return Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.check_circle,
+                    size: width * 0.15,
+                    color: Colors.green,
+                  ),
+                  SizedBox(height: height * 0.02),
+                  Text(
+                    'Registration Approved by ${controller.role.value == 'TeamLeader' ? 'Admin' : 'Team Leader'}',
+                    style: TextStyle(
+                      fontFamily: AppFonts.interBold,
+                      fontSize: width * 0.045,
+                      color: Colors.black,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  SizedBox(height: height * 0.02),
+                  ElevatedButton(
                     onPressed: () {
-                      if (controller.status.value == 'approved') {
-                        Get.offAllNamed('/login');
-                      } else if (controller.status.value == 'rejected') {
-                        Get.offAllNamed('/selection');
-                      }
+                      Get.offAllNamed('/login');
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: controller.status.value == 'approved' ? Colors.green : AppColors.black,
-                      minimumSize: Size(mq.width * 0.6, 55),
+                      backgroundColor: Colors.green,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(25),
+                        borderRadius: BorderRadius.circular(10),
                       ),
+                      padding: EdgeInsets.symmetric(horizontal: width * 0.1, vertical: height * 0.015),
                     ),
                     child: Text(
-                      controller.status.value == 'approved' ? 'Proceed' : 'Go Back',
+                      'Proceed',
                       style: TextStyle(
                         fontFamily: AppFonts.interBold,
+                        fontSize: width * 0.04,
                         color: Colors.white,
-                        fontSize: mq.width * 0.045,
                       ),
                     ),
-                  )),
+                  ),
                 ],
-              ),
-            ),
-          ),
+              );
+            } else if (controller.status.value == 'rejected') {
+              return Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.cancel,
+                    size: width * 0.15,
+                    color: Colors.red,
+                  ),
+                  SizedBox(height: height * 0.02),
+                  Text(
+                    'Registration Rejected',
+                    style: TextStyle(
+                      fontFamily: AppFonts.interBold,
+                      fontSize: width * 0.045,
+                      color: Colors.black,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  SizedBox(height: height * 0.02),
+                  ElevatedButton(
+                    onPressed: () {
+                      Get.offAllNamed('/selection');
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.black,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      padding: EdgeInsets.symmetric(horizontal: width * 0.1, vertical: height * 0.015),
+                    ),
+                    child: Text(
+                      'Go Back',
+                      style: TextStyle(
+                        fontFamily: AppFonts.interBold,
+                        fontSize: width * 0.04,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            } else {
+              return Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.error,
+                    size: width * 0.15,
+                    color: Colors.red,
+                  ),
+                  SizedBox(height: height * 0.02),
+                  Text(
+                    'Request not found. Please try signing up again.',
+                    style: TextStyle(
+                      fontFamily: AppFonts.interBold,
+                      fontSize: width * 0.045,
+                      color: Colors.black,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  SizedBox(height: height * 0.02),
+                  ElevatedButton(
+                    onPressed: () {
+                      Get.offAllNamed('/selection');
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.black,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      padding: EdgeInsets.symmetric(horizontal: width * 0.1, vertical: height * 0.015),
+                    ),
+                    child: Text(
+                      'Go Back',
+                      style: TextStyle(
+                        fontFamily: AppFonts.interBold,
+                        fontSize: width * 0.04,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            }
+          }),
         ),
       ),
     );

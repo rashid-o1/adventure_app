@@ -18,8 +18,12 @@ class LoginController extends GetxController {
   void onInit() async {
     super.onInit();
     final prefs = await SharedPreferences.getInstance();
-    selectedRole.value = prefs.getString('selectedRole') ?? 'admin'; // Fallback to 'Admin' if unset
+    selectedRole.value = prefs.getString('selectedRole') ?? 'admin';
     print('LoginController initialized with role: ${selectedRole.value}');
+
+    // Clear text fields to prevent stale data
+    usernameController.clear();
+    passwordController.clear();
   }
 
   void validateInputs() {
@@ -45,7 +49,7 @@ class LoginController extends GetxController {
       Get.snackbar(
         'Error',
         'Please fix the input errors',
-        snackPosition: SnackPosition.TOP,
+        snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Colors.red,
         colorText: Colors.white,
         margin: const EdgeInsets.all(10),
@@ -62,18 +66,16 @@ class LoginController extends GetxController {
         role: selectedRole.value,
       );
       if (result == null) {
-        // Show success Snackbar
         Get.snackbar(
           'Success',
           'Logged in successfully',
-          snackPosition: SnackPosition.TOP,
+          snackPosition: SnackPosition.BOTTOM,
           backgroundColor: Colors.green,
           colorText: Colors.white,
           margin: const EdgeInsets.all(10),
           borderRadius: 8,
           duration: const Duration(seconds: 2),
         );
-        // Delay navigation slightly to ensure Snackbar is visible
         await Future.delayed(const Duration(seconds: 2));
         String normalizedRole = selectedRole.value.toLowerCase() == 'admin' ? 'admin' : selectedRole.value;
         switch (normalizedRole) {
@@ -81,7 +83,7 @@ class LoginController extends GetxController {
             Get.offAllNamed('/superAdminHome');
             break;
           case 'TeamLeader':
-            Get.offAllNamed('/teamLeaderDashboard');
+            Get.offAllNamed('/superAdminHome');
             break;
           case 'TeamMember':
             Get.offAllNamed('/teamMemberDashboard');
@@ -91,7 +93,7 @@ class LoginController extends GetxController {
         Get.snackbar(
           'Error',
           result,
-          snackPosition: SnackPosition.TOP,
+          snackPosition: SnackPosition.BOTTOM,
           backgroundColor: Colors.red,
           colorText: Colors.white,
           margin: const EdgeInsets.all(10),
@@ -102,7 +104,7 @@ class LoginController extends GetxController {
       Get.snackbar(
         'Error',
         'Login failed: $e',
-        snackPosition: SnackPosition.TOP,
+        snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Colors.red,
         colorText: Colors.white,
         margin: const EdgeInsets.all(10),
@@ -115,6 +117,7 @@ class LoginController extends GetxController {
 
   @override
   void onClose() {
+    print('LoginController onClose called');
     usernameController.dispose();
     passwordController.dispose();
     super.onClose();

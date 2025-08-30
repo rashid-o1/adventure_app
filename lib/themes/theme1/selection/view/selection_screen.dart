@@ -16,7 +16,6 @@ class SelectionScreen extends StatelessWidget {
     return Scaffold(
       body: Stack(
         children: [
-          // 🔹 Background full screen (SafeArea ke bahar)
           Container(
             width: mq.width,
             height: mq.height,
@@ -31,8 +30,6 @@ class SelectionScreen extends StatelessWidget {
               ),
             ),
           ),
-
-          // 🔹 Foreground content SafeArea ke andar
           SafeArea(
             child: Container(
               width: mq.width,
@@ -60,8 +57,6 @@ class SelectionScreen extends StatelessWidget {
                     ),
                   ),
                   const Spacer(),
-
-                  // 🔹 Buttons
                   _buildSelectionButton(
                     context,
                     controller,
@@ -71,7 +66,6 @@ class SelectionScreen extends StatelessWidget {
                     '/login',
                   ),
                   SizedBox(height: mq.height * 0.015),
-
                   _buildSelectionButton(
                     context,
                     controller,
@@ -81,7 +75,6 @@ class SelectionScreen extends StatelessWidget {
                     '/login',
                   ),
                   SizedBox(height: mq.height * 0.015),
-
                   _buildSelectionButton(
                     context,
                     controller,

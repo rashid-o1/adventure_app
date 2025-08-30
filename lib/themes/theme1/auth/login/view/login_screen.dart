@@ -1,18 +1,21 @@
 import 'package:adventure_app/themes/theme1/auth/forgot/view/forgot_password_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../../core/utils/constant/app_labels.dart';
 import '../../../../../core/utils/style/app_colors.dart';
 import '../../../../../core/utils/style/app_fonts.dart';
-import '../controller/login_controller.dart';
+import '../controller/login_controller.dart';// Ensure this import exists or update path
 
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final LoginController controller = Get.put(LoginController());
+    // Instantiate controller only if not already present
+    final LoginController controller = Get.put(LoginController(), permanent: true);
     final RxBool isRemembered = false.obs;
 
     return Scaffold(
@@ -60,7 +63,7 @@ class LoginScreen extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 8),
-                TextField(
+                Obx(() => TextField(
                   controller: controller.usernameController,
                   decoration: InputDecoration(
                     hintText: AppLabels.emailhint,
@@ -76,7 +79,8 @@ class LoginScreen extends StatelessWidget {
                     ),
                     errorText: controller.emailError.value.isEmpty ? null : controller.emailError.value,
                   ),
-                ),
+                  enabled: !controller.isLoading.value, // Disable during loading
+                )),
                 const SizedBox(height: 20),
 
                 /// Password Field
@@ -118,6 +122,7 @@ class LoginScreen extends StatelessWidget {
                       },
                     ),
                   ),
+                  enabled: !controller.isLoading.value, // Disable during loading
                 )),
 
                 const SizedBox(height: 10),
@@ -223,36 +228,34 @@ class LoginScreen extends StatelessWidget {
                 const SizedBox(height: 20),
 
                 /// Sign Up prompt (Hide for Admin)
-                Obx(() {
-                  return controller.selectedRole.value != 'admin'
-                      ? Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Text(
-                        AppLabels.signUpPrompt,
+                Obx(() => controller.selectedRole.value != 'admin'
+                    ? Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text(
+                      AppLabels.signUpPrompt,
+                      style: TextStyle(
+                        fontFamily: AppFonts.interRegular,
+                        fontSize: 14,
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () {
+                        Get.toNamed("/signup");
+                      },
+                      child: Text(
+                        " Sign up",
                         style: TextStyle(
-                          fontFamily: AppFonts.interRegular,
+                          fontFamily: AppFonts.interBold,
+                          color: AppColors.black,
                           fontSize: 14,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
-                      GestureDetector(
-                        onTap: () {
-                          Get.toNamed("/signup");
-                        },
-                        child: Text(
-                          " Sign up",
-                          style: TextStyle(
-                            fontFamily: AppFonts.interBold,
-                            color: AppColors.black,
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ],
-                  )
-                      : const SizedBox.shrink();
-                }),
+                    ),
+                  ],
+                )
+                    : const SizedBox.shrink()),
               ],
             ),
           ),

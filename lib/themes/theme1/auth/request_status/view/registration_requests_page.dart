@@ -1,17 +1,35 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../../../../core/utils/style/app_fonts.dart';
 import '../../../../../../core/utils/style/app_colors.dart';
-import '../../../../../../services/auth_service.dart';
+import '../controller/RegistrationRequestsController.dart';
 
-class RegistrationRequestsPage extends StatelessWidget {
+class RegistrationRequestsPage extends StatefulWidget {
   const RegistrationRequestsPage({super.key});
 
   @override
+  _RegistrationRequestsPageState createState() => _RegistrationRequestsPageState();
+}
+
+class _RegistrationRequestsPageState extends State<RegistrationRequestsPage> with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+  final RegistrationRequestsController _controller = Get.put(RegistrationRequestsController());
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 3, vsync: this);
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final AuthService authService = AuthService();
     final double width = MediaQuery.of(context).size.width;
     final double height = MediaQuery.of(context).size.height;
 
@@ -32,262 +50,218 @@ class RegistrationRequestsPage extends StatelessWidget {
           icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Get.back(),
         ),
+        bottom: TabBar(
+          controller: _tabController,
+          labelColor: Colors.white,
+          unselectedLabelColor: Colors.white70,
+          indicatorColor: Colors.white,
+          tabs: const [
+            Tab(text: 'Pending'),
+            Tab(text: 'Approved'),
+            Tab(text: 'Rejected'),
+          ],
+        ),
       ),
       body: SafeArea(
         top: false,
-        child: FutureBuilder<String?>(
-          future: authService.getUserRole(FirebaseAuth.instance.currentUser!.uid),
-          builder: (context, roleSnapshot) {
-            if (roleSnapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator(color: Colors.black));
-            }
-            if (roleSnapshot.hasError || !roleSnapshot.hasData) {
-              return Center(
-                child: Text(
-                  'Error loading user role',
-                  style: TextStyle(
-                    fontFamily: AppFonts.interRegular,
-                    fontSize: width * 0.04,
-                    color: Colors.black,
-                  ),
+        child: Obx(() {
+          if (_controller.isLoading.value) {
+            return const Center(child: CircularProgressIndicator(color: Colors.black));
+          }
+          if (_controller.errorMessage.value.isNotEmpty) {
+            return Center(
+              child: Text(
+                _controller.errorMessage.value,
+                style: TextStyle(
+                  fontFamily: AppFonts.interRegular,
+                  fontSize: width * 0.04,
+                  color: Colors.red,
                 ),
-              );
-            }
-
-            final String? role = roleSnapshot.data;
-            if (role == null || (role != 'admin' && role != 'TeamLeader')) {
-              return Center(
-                child: Text(
-                  'Unauthorized access',
-                  style: TextStyle(
-                    fontFamily: AppFonts.interRegular,
-                    fontSize: width * 0.04,
-                    color: Colors.black,
-                  ),
-                ),
-              );
-            }
-
-            return FutureBuilder<String?>(
-              future: _getUserSignupId(role),
-              builder: (context, signupIdSnapshot) {
-                if (signupIdSnapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator(color: Colors.black));
-                }
-                if (signupIdSnapshot.hasError || !signupIdSnapshot.hasData) {
-                  return Center(
-                    child: Text(
-                      'Error loading signup ID',
-                      style: TextStyle(
-                        fontFamily: AppFonts.interRegular,
-                        fontSize: width * 0.04,
-                        color: Colors.black,
-                      ),
-                    ),
-                  );
-                }
-
-                final String signupId = signupIdSnapshot.data!;
-                return StreamBuilder<QuerySnapshot>(
-                  stream: FirebaseFirestore.instance
-                      .collection('RegistrationRequests')
-                      .where(role == 'admin' ? 'adminId' : 'leaderId', isEqualTo: signupId)
-                      .where('status', isEqualTo: 'pending')
-                      .snapshots(),
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return const Center(child: CircularProgressIndicator(color: Colors.black));
-                    }
-                    if (snapshot.hasError) {
-                      return Center(
-                        child: Text(
-                          'Error loading requests: ${snapshot.error}',
-                          style: TextStyle(
-                            fontFamily: AppFonts.interRegular,
-                            fontSize: width * 0.04,
-                            color: Colors.black,
-                          ),
-                        ),
-                      );
-                    }
-
-                    final requests = snapshot.data?.docs ?? [];
-                    if (requests.isEmpty) {
-                      return Center(
-                        child: Text(
-                          'No pending registration requests',
-                          style: TextStyle(
-                            fontFamily: AppFonts.interRegular,
-                            fontSize: width * 0.04,
-                            color: Colors.black,
-                          ),
-                        ),
-                      );
-                    }
-
-                    return ListView.builder(
-                      padding: EdgeInsets.symmetric(horizontal: width * 0.05, vertical: height * 0.02),
-                      itemCount: requests.length,
-                      itemBuilder: (context, index) {
-                        final request = requests[index];
-                        final String userId = request['userId'];
-                        final String requestRole = request['role'];
-
-                        return FutureBuilder<Map<String, dynamic>?>(
-                          future: _getUserData(userId, requestRole),
-                          builder: (context, userSnapshot) {
-                            if (userSnapshot.connectionState == ConnectionState.waiting) {
-                              return const ListTile(
-                                title: Text('Loading...'),
-                              );
-                            }
-                            if (userSnapshot.hasError || !userSnapshot.hasData) {
-                              return ListTile(
-                                title: Text(
-                                  'Error loading user data',
-                                  style: TextStyle(
-                                    fontFamily: AppFonts.interRegular,
-                                    fontSize: width * 0.04,
-                                    color: Colors.black,
-                                  ),
-                                ),
-                              );
-                            }
-
-                            final userData = userSnapshot.data!;
-                            return Card(
-                              elevation: 2,
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                              margin: EdgeInsets.symmetric(vertical: height * 0.01),
-                              child: ListTile(
-                                contentPadding: EdgeInsets.symmetric(horizontal: width * 0.04, vertical: height * 0.01),
-                                title: Text(
-                                  userData['email'] ?? 'Unknown Email',
-                                  style: TextStyle(
-                                    fontFamily: AppFonts.interBold,
-                                    fontSize: width * 0.04,
-                                    color: Colors.black,
-                                  ),
-                                ),
-                                subtitle: Text(
-                                  'Role: $requestRole\nStatus: ${request['status']}',
-                                  style: TextStyle(
-                                    fontFamily: AppFonts.interRegular,
-                                    fontSize: width * 0.035,
-                                    color: Colors.grey[600],
-                                  ),
-                                ),
-                                trailing: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    IconButton(
-                                      icon: const Icon(Icons.check, color: Colors.green),
-                                      onPressed: () => _approveRequest(userId, requestRole, signupId, role),
-                                      tooltip: 'Approve',
-                                    ),
-                                    IconButton(
-                                      icon: const Icon(Icons.close, color: Colors.red),
-                                      onPressed: () => _rejectRequest(userId),
-                                      tooltip: 'Reject',
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            );
-                          },
-                        );
-                      },
-                    );
-                  },
-                );
-              },
+                textAlign: TextAlign.center,
+              ),
             );
-          },
-        ),
+          }
+          if (_controller.userRole.value != 'admin' && _controller.userRole.value != 'TeamLeader') {
+            return Center(
+              child: Text(
+                'Unauthorized access',
+                style: TextStyle(
+                  fontFamily: AppFonts.interRegular,
+                  fontSize: width * 0.04,
+                  color: Colors.black,
+                ),
+              ),
+            );
+          }
+          return TabBarView(
+            controller: _tabController,
+            children: [
+              _buildRequestList(context, 'pending', width, height),
+              _buildRequestList(context, 'approved', width, height),
+              _buildRequestList(context, 'rejected', width, height),
+            ],
+          );
+        }),
       ),
     );
   }
 
-  Future<String?> _getUserSignupId(String role) async {
-    final String uid = FirebaseAuth.instance.currentUser!.uid;
-    if (role == 'admin') {
-      final doc = await FirebaseFirestore.instance.collection('admins').doc(uid).get();
-      return doc.exists ? doc['signupId'] : null;
-    } else if (role == 'TeamLeader') {
-      final doc = await FirebaseFirestore.instance.collection('TeamLeaders').doc(uid).get();
-      return doc.exists ? doc['signupId'] : null;
-    }
-    return null;
-  }
+  Widget _buildRequestList(BuildContext context, String status, double width, double height) {
+    return StreamBuilder<QuerySnapshot>(
+      stream: _controller.getRequestsStream(status),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator(color: Colors.black));
+        }
+        if (snapshot.hasError) {
+          print('Error loading $status requests: ${snapshot.error}');
+          return Center(
+            child: Text(
+              'Error loading $status requests: ${snapshot.error}',
+              style: TextStyle(
+                fontFamily: AppFonts.interRegular,
+                fontSize: width * 0.04,
+                color: Colors.red,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          );
+        }
 
-  Future<Map<String, dynamic>?> _getUserData(String userId, String role) async {
-    try {
-      final collection = role == 'TeamLeader' ? 'TeamLeaders' : 'TeamMembers';
-      final doc = await FirebaseFirestore.instance.collection(collection).doc(userId).get();
-      return doc.exists ? doc.data() as Map<String, dynamic> : null;
-    } catch (e) {
-      print('Error fetching user data: $e');
-      return null;
-    }
-  }
+        final requests = snapshot.data?.docs ?? [];
+        if (requests.isEmpty) {
+          return Center(
+            child: Text(
+              'No $status registration requests',
+              style: TextStyle(
+                fontFamily: AppFonts.interRegular,
+                fontSize: width * 0.04,
+                color: Colors.black,
+              ),
+            ),
+          );
+        }
 
-  Future<void> _approveRequest(String userId, String requestRole, String signupId, String userRole) async {
-    try {
-      await FirebaseFirestore.instance.collection('RegistrationRequests').doc(userId).update({
-        'status': 'approved',
-      });
-      final collection = requestRole == 'TeamLeader' ? 'TeamLeaders' : 'TeamMembers';
-      await FirebaseFirestore.instance.collection(collection).doc(userId).update({
-        'status': 'approved',
-      });
-      Get.snackbar(
-        'Success',
-        'Request approved',
-        snackPosition: SnackPosition.TOP,
-        backgroundColor: Colors.green,
-        colorText: Colors.white,
-        margin: const EdgeInsets.all(10),
-        borderRadius: 8,
-        duration: const Duration(seconds: 2),
-      );
-    } catch (e) {
-      Get.snackbar(
-        'Error',
-        'Failed to approve request: $e',
-        snackPosition: SnackPosition.TOP,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-        margin: const EdgeInsets.all(10),
-        borderRadius: 8,
-      );
-    }
-  }
+        return ListView.builder(
+          padding: EdgeInsets.symmetric(horizontal: width * 0.05, vertical: height * 0.02),
+          itemCount: requests.length,
+          itemBuilder: (context, index) {
+            final request = requests[index];
+            final String tempId = request['userId'];
+            final String requestRole = request['role'];
+            final String requestStatus = request['status'] ?? 'pending';
 
-  Future<void> _rejectRequest(String userId) async {
-    try {
-      await FirebaseFirestore.instance.collection('RegistrationRequests').doc(userId).update({
-        'status': 'rejected',
-      });
-      Get.snackbar(
-        'Success',
-        'Request rejected',
-        snackPosition: SnackPosition.TOP,
-        backgroundColor: Colors.green,
-        colorText: Colors.white,
-        margin: const EdgeInsets.all(10),
-        borderRadius: 8,
-        duration: const Duration(seconds: 2),
-      );
-    } catch (e) {
-      Get.snackbar(
-        'Error',
-        'Failed to reject request: $e',
-        snackPosition: SnackPosition.TOP,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-        margin: const EdgeInsets.all(10),
-        borderRadius: 8,
-      );
-    }
+            Color cardColor = Colors.white;
+            String statusText = requestStatus.capitalizeFirst!;
+            if (requestStatus == 'approved') {
+              cardColor = Colors.green.withOpacity(0.1);
+            } else if (requestStatus == 'rejected') {
+              cardColor = Colors.red.withOpacity(0.1);
+            }
+
+            return Card(
+              elevation: 2,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              margin: EdgeInsets.symmetric(vertical: height * 0.01),
+              color: cardColor,
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: width * 0.04, vertical: height * 0.01),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      request['email'] ?? 'Unknown Email',
+                      style: TextStyle(
+                        fontFamily: AppFonts.interBold,
+                        fontSize: width * 0.04,
+                        color: Colors.black,
+                      ),
+                    ),
+                    SizedBox(height: height * 0.005),
+                    Text(
+                      'Role: $requestRole\nStatus: $statusText',
+                      style: TextStyle(
+                        fontFamily: AppFonts.interRegular,
+                        fontSize: width * 0.035,
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                    if (requestStatus == 'pending') ...[
+                      SizedBox(height: height * 0.01),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          ElevatedButton(
+                            onPressed: () async {
+                              try {
+                                await _controller.approveRequest(tempId, requestRole);
+                              } catch (e) {
+                                Get.snackbar(
+                                  'Error',
+                                  'Failed to approve request: $e',
+                                  snackPosition: SnackPosition.TOP,
+                                  backgroundColor: Colors.red,
+                                  colorText: Colors.white,
+                                  margin: const EdgeInsets.all(10),
+                                  borderRadius: 8,
+                                );
+                              }
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.green,
+                              padding: EdgeInsets.symmetric(horizontal: width * 0.04),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                            ),
+                            child: Text(
+                              'Approve',
+                              style: TextStyle(
+                                fontFamily: AppFonts.interMedium,
+                                fontSize: width * 0.035,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                          SizedBox(width: width * 0.02),
+                          ElevatedButton(
+                            onPressed: () async {
+                              try {
+                                await _controller.rejectRequest(tempId, requestRole);
+                              } catch (e) {
+                                Get.snackbar(
+                                  'Error',
+                                  'Failed to reject request: $e',
+                                  snackPosition: SnackPosition.TOP,
+                                  backgroundColor: Colors.red,
+                                  colorText: Colors.white,
+                                  margin: const EdgeInsets.all(10),
+                                  borderRadius: 8,
+                                );
+                              }
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.red,
+                              padding: EdgeInsets.symmetric(horizontal: width * 0.04),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                            ),
+                            child: Text(
+                              'Reject',
+                              style: TextStyle(
+                                fontFamily: AppFonts.interMedium,
+                                fontSize: width * 0.035,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
   }
 }

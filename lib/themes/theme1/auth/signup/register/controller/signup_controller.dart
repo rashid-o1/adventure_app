@@ -3,7 +3,6 @@ import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:math';
 import '../../../../../../services/auth_service.dart';
-import '../../verification/view/signup_verification.dart';
 
 class SignupController extends GetxController {
   final usernameController = TextEditingController();
@@ -26,6 +25,7 @@ class SignupController extends GetxController {
     super.onInit();
     final prefs = await SharedPreferences.getInstance();
     selectedRole.value = prefs.getString('selectedRole') ?? '';
+    print('SignupController initialized with role: ${selectedRole.value}');
   }
 
   void validateInputs() {
@@ -65,16 +65,7 @@ class SignupController extends GetxController {
         idError.value.isNotEmpty ||
         passwordError.value.isNotEmpty ||
         repeatPasswordError.value.isNotEmpty) {
-      Get.snackbar(
-        'Error',
-        'Please fix the input errors',
-        snackPosition: SnackPosition.TOP,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-        margin: const EdgeInsets.all(10),
-        borderRadius: 8,
-      );
-      return;
+      return; // Errors shown inline
     }
 
     isLoading.value = true;
@@ -94,22 +85,27 @@ class SignupController extends GetxController {
       );
 
       if (result == null) {
-        Get.offAll(() => const SignupVerificationScreen(title: 'Registration Request'));
+        // Clear tempId from SharedPreferences
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.remove('tempId');
+        print('Cleared tempId from SharedPreferences');
         Get.snackbar(
           'Success',
-          'Signup request submitted successfully',
-          snackPosition: SnackPosition.TOP,
+          'Your registration will be sent to admin for approval',
+          snackPosition: SnackPosition.BOTTOM,
           backgroundColor: Colors.green,
           colorText: Colors.white,
           margin: const EdgeInsets.all(10),
           borderRadius: 8,
           duration: const Duration(seconds: 2),
         );
+        await Future.delayed(const Duration(seconds: 2)); // Ensure Snackbar is visible
+        Get.offAllNamed('/login');
       } else {
         Get.snackbar(
           'Error',
           result,
-          snackPosition: SnackPosition.TOP,
+          snackPosition: SnackPosition.BOTTOM,
           backgroundColor: Colors.red,
           colorText: Colors.white,
           margin: const EdgeInsets.all(10),
@@ -120,7 +116,7 @@ class SignupController extends GetxController {
       Get.snackbar(
         'Error',
         'Signup failed: $e',
-        snackPosition: SnackPosition.TOP,
+        snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Colors.red,
         colorText: Colors.white,
         margin: const EdgeInsets.all(10),

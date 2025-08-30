@@ -2,6 +2,7 @@ import 'package:adventure_app/themes/theme1/admin/create%20events/view/create_ev
 import 'package:adventure_app/themes/theme1/admin/create%20team/view/create_team_page.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../../../core/utils/style/app_fonts.dart';
 import '../../../../auth/request_status/view/registration_requests_page.dart';
 import '../../../create%20tasks/view/create_task_page.dart';
@@ -31,193 +32,212 @@ class SuperAdminHome extends StatelessWidget {
       const EquipmentPage(),
     ];
 
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.black,
-        centerTitle: true,
-        title: Text(
-          controller.currentTitle,
-          style: TextStyle(
-            fontFamily: AppFonts.interBold,
-            fontSize: width * 0.055,
-            color: Colors.white,
-          ),
-        ),
-        actions: [
-          PopupMenuButton<String>(
-            icon: Icon(Icons.more_vert, color: Colors.white),
-            onSelected: (value) async {
-              if (value == 'logout') {
-                await authService.signOut();
-              } else if (value == 'register_requests') {
-                Get.to(() => const RegistrationRequestsPage());
-              }
-            },
-            itemBuilder: (BuildContext context) => [
-              PopupMenuItem<String>(
-                value: 'logout',
-                child: Text(
-                  'Logout',
-                  style: TextStyle(
-                    fontFamily: AppFonts.interRegular,
-                    fontSize: width * 0.04,
-                    color: Colors.black,
-                  ),
-                ),
+    return FutureBuilder<String?>(
+      future: SharedPreferences.getInstance().then((prefs) => prefs.getString('selectedRole')),
+      builder: (context, snapshot) {
+        final String? role = snapshot.data;
+        print('User role from SharedPreferences: $role');
+        final bool isTeamLeader = role == 'TeamLeader';
+
+        return Scaffold(
+          backgroundColor: Colors.white,
+          appBar: AppBar(
+            backgroundColor: Colors.black,
+            centerTitle: true,
+            title: Text(
+              controller.currentTitle,
+              style: TextStyle(
+                fontFamily: AppFonts.interBold,
+                fontSize: width * 0.055,
+                color: Colors.white,
               ),
-              PopupMenuItem<String>(
-                value: 'register_requests',
-                child: Text(
-                  'Register Requests',
-                  style: TextStyle(
-                    fontFamily: AppFonts.interRegular,
-                    fontSize: width * 0.04,
-                    color: Colors.black,
+            ),
+            actions: [
+              PopupMenuButton<String>(
+                icon: Icon(Icons.more_vert, color: Colors.white),
+                onSelected: (value) async {
+                  if (value == 'logout') {
+                    await authService.signOut();
+                  } else if (value == 'register_requests') {
+                    Get.to(() => const RegistrationRequestsPage());
+                  }
+                },
+                itemBuilder: (BuildContext context) => [
+                  PopupMenuItem<String>(
+                    value: 'logout',
+                    child: Text(
+                      'Logout',
+                      style: TextStyle(
+                        fontFamily: AppFonts.interRegular,
+                        fontSize: width * 0.04,
+                        color: Colors.black,
+                      ),
+                    ),
                   ),
-                ),
+                  PopupMenuItem<String>(
+                    value: 'register_requests',
+                    child: Text(
+                      'Register Requests',
+                      style: TextStyle(
+                        fontFamily: AppFonts.interRegular,
+                        fontSize: width * 0.04,
+                        color: Colors.black,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
-        ],
-      ),
-      body: SafeArea(
-        top: false, // ✅ exclude AppBar area from SafeArea
-        child: Stack(
-          children: [
-            Column(
+          body: SafeArea(
+            top: false,
+            child: Stack(
               children: [
-                // Tabs Row
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: width * 0.05, vertical: height * 0.012),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      _buildTab(context, controller, "Events", 0, width),
-                      _buildTab(context, controller, "Teams", 1, width),
-                      _buildTab(context, controller, "Tasks", 2, width),
-                      _buildTab(context, controller, "Equipment", 3, width),
-                    ],
-                  ),
-                ),
-
-                // Pages content
-                Expanded(
-                  child: Obx(() {
-                    if (controller.hasContent[controller.selectedTabIndex.value] == false) {
-                      return const EventsPage();
-                    } else {
-                      return pages[controller.selectedTabIndex.value];
-                    }
-                  }),
-                ),
-
-                // Bottom Placeholder for Events Tab
-                Obx(() => controller.selectedTabIndex.value == 0 && !controller.hasContent[0]
-                    ? Padding(
-                  padding: EdgeInsets.symmetric(horizontal: width * 0.05, vertical: height * 0.025),
-                  child: Column(
-                    children: [
-                      Text(
-                        "All you need is their email address.",
-                        style: TextStyle(
-                          fontFamily: AppFonts.interRegular,
-                          fontSize: width * 0.037,
-                          color: Colors.grey[600],
-                        ),
+                Column(
+                  children: [
+                    // Tabs Row
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: width * 0.05, vertical: height * 0.012),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        children: [
+                          _buildTab(context, controller, "Events", 0, width),
+                          _buildTab(context, controller, "Teams", 1, width),
+                          _buildTab(context, controller, "Tasks", 2, width),
+                          _buildTab(context, controller, "Equipment", 3, width),
+                        ],
                       ),
-                      SizedBox(height: height * 0.012),
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          onPressed: controller.inviteAdmins,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.white54,
-                            padding: EdgeInsets.symmetric(vertical: height * 0.022),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(25),
-                              side: const BorderSide(color: Colors.black),
-                            ),
-                          ),
-                          child: Text(
-                            "Invite Admins",
+                    ),
+
+                    // Pages content
+                    Expanded(
+                      child: Obx(() {
+                        if (controller.hasContent[controller.selectedTabIndex.value] == false) {
+                          return const EventsPage();
+                        } else {
+                          return pages[controller.selectedTabIndex.value];
+                        }
+                      }),
+                    ),
+
+                    // Bottom Placeholder for Events Tab (only for admin)
+                    Obx(() => controller.selectedTabIndex.value == 0 && !controller.hasContent[0] && !isTeamLeader
+                        ? Padding(
+                      padding: EdgeInsets.symmetric(horizontal: width * 0.05, vertical: height * 0.025),
+                      child: Column(
+                        children: [
+                          Text(
+                            "All you need is their email address.",
                             style: TextStyle(
-                              fontFamily: AppFonts.interBold,
-                              color: Colors.black,
-                              fontSize: width * 0.042,
+                              fontFamily: AppFonts.interRegular,
+                              fontSize: width * 0.037,
+                              color: Colors.grey[600],
                             ),
                           ),
-                        ),
-                      )
-                    ],
+                          SizedBox(height: height * 0.012),
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton(
+                              onPressed: controller.inviteAdmins,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.white54,
+                                padding: EdgeInsets.symmetric(vertical: height * 0.022),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(25),
+                                  side: const BorderSide(color: Colors.black),
+                                ),
+                              ),
+                              child: Text(
+                                "Invite Admins",
+                                style: TextStyle(
+                                  fontFamily: AppFonts.interBold,
+                                  color: Colors.black,
+                                  fontSize: width * 0.042,
+                                ),
+                              ),
+                            ),
+                          )
+                        ],
+                      ),
+                    )
+                        : const SizedBox.shrink()),
+                  ],
+                ),
+
+                // FAB overlay background
+                Obx(() => controller.isFabExpanded.value
+                    ? GestureDetector(
+                  onTap: controller.toggleFab,
+                  child: Container(
+                    color: Colors.black.withOpacity(0.6),
                   ),
                 )
                     : const SizedBox.shrink()),
+
+                // FAB Menu Items
+                Obx(() {
+                  final double bottomPosition = controller.selectedTabIndex.value == 0 && !controller.hasContent[0]
+                      ? height * 0.22
+                      : height * 0.13;
+                  final bool showFab = !isTeamLeader || (controller.selectedTabIndex.value == 1 || controller.selectedTabIndex.value == 2);
+                  if (!showFab) return const SizedBox.shrink();
+
+                  return Positioned(
+                    bottom: bottomPosition,
+                    right: width * 0.04,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        if (controller.isFabExpanded.value) ...[
+                          if (!isTeamLeader) ...[
+                            _buildFabMenuItem("Create Event", Icons.group, () => Get.to(() => const CreateEventPage()), width),
+                            SizedBox(height: height * 0.012),
+                          ],
+                          _buildFabMenuItem("Create Task", Icons.assignment, () => Get.to(() => const CreateTaskPage()), width),
+                          SizedBox(height: height * 0.012),
+                          _buildFabMenuItem("Create Team", Icons.person_add, () => Get.to(() => const CreateTeamPage()), width),
+                          if (!isTeamLeader) ...[
+                            SizedBox(height: height * 0.012),
+                            _buildFabMenuItem("New message", Icons.chat_bubble_outline, () {}, width),
+                          ],
+                        ],
+                      ],
+                    ),
+                  );
+                }),
+
+                // Main FAB Button
+                Obx(() {
+                  final double bottomPosition = controller.selectedTabIndex.value == 0 && !controller.hasContent[0]
+                      ? height * 0.13
+                      : height * 0.05;
+                  final bool showFab = !isTeamLeader || (controller.selectedTabIndex.value == 1 || controller.selectedTabIndex.value == 2);
+                  if (!showFab) return const SizedBox.shrink();
+
+                  return Positioned(
+                    bottom: bottomPosition,
+                    right: width * 0.04,
+                    child: FloatingActionButton(
+                      onPressed: controller.toggleFab,
+                      backgroundColor: Colors.black,
+                      shape: const CircleBorder(),
+                      child: AnimatedRotation(
+                        turns: controller.isFabExpanded.value ? 0.25 : 0,
+                        duration: const Duration(milliseconds: 300),
+                        child: Icon(
+                          controller.isFabExpanded.value ? Icons.close : Icons.add,
+                          color: Colors.white,
+                          size: width * 0.07,
+                        ),
+                      ),
+                    ),
+                  );
+                }),
               ],
             ),
-
-            // FAB overlay background
-            Obx(() => controller.isFabExpanded.value
-                ? GestureDetector(
-              onTap: controller.toggleFab,
-              child: Container(
-                color: Colors.black.withOpacity(0.6),
-              ),
-            )
-                : const SizedBox.shrink()),
-
-            // FAB Menu Items
-            Obx(() {
-              final double bottomPosition = controller.selectedTabIndex.value == 0 && !controller.hasContent[0]
-                  ? height * 0.22
-                  : height * 0.13;
-              return Positioned(
-                bottom: bottomPosition,
-                right: width * 0.04,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    if (controller.isFabExpanded.value) ...[
-                      _buildFabMenuItem("Create Event", Icons.group, () => Get.to(() => const CreateEventPage()), width),
-                      SizedBox(height: height * 0.012),
-                      _buildFabMenuItem("Create Task", Icons.assignment, () => Get.to(() => const CreateTaskPage()), width),
-                      SizedBox(height: height * 0.012),
-                      _buildFabMenuItem("Team Invite", Icons.person_add, () => Get.to(() => const CreateTeamPage()), width),
-                      SizedBox(height: height * 0.012),
-                      _buildFabMenuItem("New message", Icons.chat_bubble_outline, () {}, width),
-                    ],
-                  ],
-                ),
-              );
-            }),
-
-            // Main FAB Button
-            Obx(() {
-              final double bottomPosition = controller.selectedTabIndex.value == 0 && !controller.hasContent[0]
-                  ? height * 0.13
-                  : height * 0.05;
-              return Positioned(
-                bottom: bottomPosition,
-                right: width * 0.04,
-                child: FloatingActionButton(
-                  onPressed: controller.toggleFab,
-                  backgroundColor: Colors.black,
-                  shape: const CircleBorder(),
-                  child: AnimatedRotation(
-                    turns: controller.isFabExpanded.value ? 0.25 : 0,
-                    duration: const Duration(milliseconds: 300),
-                    child: Icon(
-                      controller.isFabExpanded.value ? Icons.close : Icons.add,
-                      color: Colors.white,
-                      size: width * 0.07,
-                    ),
-                  ),
-                ),
-              );
-            }),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 

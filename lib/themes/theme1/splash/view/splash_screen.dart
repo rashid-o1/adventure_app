@@ -14,7 +14,6 @@ class SplashScreen extends StatelessWidget {
     return Scaffold(
       body: Stack(
         children: [
-          // 🔹 Background image full screen (including status bar)
           Container(
             width: mq.width,
             height: mq.height,
@@ -29,12 +28,9 @@ class SplashScreen extends StatelessWidget {
               ),
             ),
           ),
-
-          // 🔹 Foreground content inside SafeArea
           SafeArea(
             child: Stack(
               children: [
-                // Center splash logo
                 Center(
                   child: Image.asset(
                     'assets/images/appImages/splash.png',
@@ -43,8 +39,6 @@ class SplashScreen extends StatelessWidget {
                     fit: BoxFit.contain,
                   ),
                 ),
-
-                // Loading indicator at bottom
                 Positioned(
                   left: 0,
                   right: 0,

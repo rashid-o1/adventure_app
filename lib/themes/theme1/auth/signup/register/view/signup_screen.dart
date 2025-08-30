@@ -61,7 +61,7 @@ class SignupScreen extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 8),
-                TextField(
+                Obx(() => TextField(
                   controller: controller.usernameController,
                   decoration: InputDecoration(
                     hintText: AppLabels.emailhint,
@@ -76,8 +76,13 @@ class SignupScreen extends StatelessWidget {
                       borderSide: BorderSide(color: Colors.black, width: 2),
                     ),
                     errorText: controller.emailError.value.isEmpty ? null : controller.emailError.value,
+                    errorStyle: const TextStyle(
+                      color: Colors.red,
+                      fontFamily: AppFonts.interRegular,
+                      fontSize: 12,
+                    ),
                   ),
-                ),
+                )),
                 const SizedBox(height: 20),
                 Obx(() => Text(
                   controller.selectedRole.value == 'TeamLeader' ? 'Admin ID' : 'Leader ID',
@@ -89,7 +94,7 @@ class SignupScreen extends StatelessWidget {
                   ),
                 )),
                 const SizedBox(height: 8),
-                TextField(
+                Obx(() => TextField(
                   controller: controller.idController,
                   keyboardType: TextInputType.number,
                   maxLength: 7,
@@ -106,8 +111,13 @@ class SignupScreen extends StatelessWidget {
                       borderSide: BorderSide(color: Colors.black, width: 2),
                     ),
                     errorText: controller.idError.value.isEmpty ? null : controller.idError.value,
+                    errorStyle: const TextStyle(
+                      color: Colors.red,
+                      fontFamily: AppFonts.interRegular,
+                      fontSize: 12,
+                    ),
                   ),
-                ),
+                )),
                 const SizedBox(height: 20),
                 const Text(
                   AppLabels.password,
@@ -135,6 +145,11 @@ class SignupScreen extends StatelessWidget {
                       borderSide: BorderSide(color: Colors.black, width: 2),
                     ),
                     errorText: controller.passwordError.value.isEmpty ? null : controller.passwordError.value,
+                    errorStyle: const TextStyle(
+                      color: Colors.red,
+                      fontFamily: AppFonts.interRegular,
+                      fontSize: 12,
+                    ),
                     suffixIcon: IconButton(
                       icon: Icon(
                         controller.isPasswordVisible.value ? Icons.visibility : Icons.visibility_off,
@@ -173,6 +188,11 @@ class SignupScreen extends StatelessWidget {
                       borderSide: BorderSide(color: Colors.black, width: 2),
                     ),
                     errorText: controller.repeatPasswordError.value.isEmpty ? null : controller.repeatPasswordError.value,
+                    errorStyle: const TextStyle(
+                      color: Colors.red,
+                      fontFamily: AppFonts.interRegular,
+                      fontSize: 12,
+                    ),
                     suffixIcon: IconButton(
                       icon: Icon(
                         controller.isRepeatPasswordVisible.value ? Icons.visibility : Icons.visibility_off,
@@ -204,8 +224,6 @@ class SignupScreen extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 10),
-
-                /// Divider with text
                 Row(
                   children: const [
                     Expanded(child: Divider()),
@@ -217,8 +235,6 @@ class SignupScreen extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 15),
-
-                /// Social Buttons
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -290,7 +306,6 @@ class SignupScreen extends StatelessWidget {
     );
   }
 
-  /// Social Button Widget
   Widget _socialButton(String assetPath) {
     return Container(
       height: 50,
@@ -303,7 +318,6 @@ class SignupScreen extends StatelessWidget {
     );
   }
 }
-
 
 // import 'package:adventure_app/themes/theme1/auth/signup/verification/view/signup_otp_verification.dart';
 // import 'package:flutter/material.dart';

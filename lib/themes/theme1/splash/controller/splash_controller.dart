@@ -1,6 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../services/auth_service.dart';
@@ -19,44 +18,44 @@ class SplashController extends GetxController {
     await Future.delayed(const Duration(seconds: 3));
     try {
       final prefs = await SharedPreferences.getInstance();
-      bool isFirstTime = prefs.getBool('isFirstTime') ?? true;
+      String? selectedRole = prefs.getString('selectedRole');
+      User? user = FirebaseAuth.instance.currentUser;
 
-      if (isFirstTime) {
-        print('First time launch, signing out and navigating to SelectionScreen');
-        // Clear any existing Firebase Auth session
-        await _authService.signOut();
-        // Reset SharedPreferences
-        await prefs.setBool('isFirstTime', false);
-        await prefs.remove('selectedRole');
+      if (user == null) {
+        print('No user logged in, navigating to SelectionScreen');
         Get.offAllNamed('/selection');
         return;
       }
 
-      User? user = FirebaseAuth.instance.currentUser;
-      if (user != null) {
-        print('User is logged in: ${user.uid}');
-        String? role = await _authService.getUserRole(user.uid);
-        if (role != null) {
-          String normalizedRole = role.toLowerCase() == 'admin' ? 'admin' : role;
-          print('Role found: $normalizedRole');
-          switch (normalizedRole) {
-            case 'admin':
-              Get.offAllNamed('/superAdminHome');
-              break;
-            case 'TeamLeader':
-              Get.offAllNamed('/teamLeaderDashboard');
-              break;
-            case 'TeamMember':
-              Get.offAllNamed('/teamMemberDashboard');
-              break;
-          }
-        } else {
-          print('No role found, navigating to SelectionScreen');
-          Get.offAllNamed('/selection');
-        }
-      } else {
-        print('No user logged in, navigating to SelectionScreen');
+      print('User is logged in: ${user.uid}');
+      String? userRole = selectedRole ?? await _authService.getUserRole(user.uid);
+      if (userRole == null) {
+        print('No role found, navigating to SelectionScreen');
         Get.offAllNamed('/selection');
+        return;
+      }
+
+      bool isApproved = await _authService.isUserApproved(user.uid, userRole);
+      if (!isApproved) {
+        print('User is not approved, navigating to SelectionScreen');
+        Get.offAllNamed('/selection');
+        return;
+      }
+
+      String normalizedRole = userRole.toLowerCase() == 'admin' ? 'admin' : userRole;
+      print('Role found and approved: $normalizedRole');
+      await prefs.setString('selectedRole', normalizedRole);
+      await prefs.setBool('isFirstTime', false); // Set isFirstTime to false after successful role check
+      switch (normalizedRole) {
+        case 'admin':
+          Get.offAllNamed('/superAdminHome');
+          break;
+        case 'TeamLeader':
+          Get.offAllNamed('/teamLeaderDashboard');
+          break;
+        case 'TeamMember':
+          Get.offAllNamed('/teamMemberDashboard');
+          break;
       }
     } catch (e) {
       print('Error in SplashController: $e');
@@ -70,10 +69,11 @@ class SplashController extends GetxController {
         borderRadius: 8,
       );
       Get.offAllNamed('/selection');
+    } finally {
+      isLoading.value = false;
     }
   }
 }
-
 
 // import 'package:get/get.dart';
 //
